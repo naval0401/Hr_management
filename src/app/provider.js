@@ -67,7 +67,7 @@ export default function Providers({ children }) {
   if (status === "error") {
     return (
       <div className="h-screen flex items-center justify-center bg-red-50 text-red-600">
-        Authentication failed. Redirecting...
+        Authentication failed. Redirecting... 
       </div>
     );
   }
