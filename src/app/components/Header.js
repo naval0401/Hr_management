@@ -6,9 +6,15 @@ import keycloak from "@/lib/keycloak";
 
 export default function Header() {
   const [open, setOpen] = useState(false);
+  const [user, setUser] = useState({
+    name: "",
+    role: "",
+    initials: "",
+  });
+
   const dropdownRef = useRef(null);
 
-  // Click outside + auth check (separated properly)
+  // Click outside dropdown close
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -20,14 +26,13 @@ export default function Header() {
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-
     return () =>
       document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Auth check (safe async init)
+  // Keycloak auth + user data
   useEffect(() => {
-    const checkAuth = async () => {
+    const loadUser = async () => {
       try {
         if (!keycloak?.authenticated) {
           await keycloak.init({ onLoad: "check-sso" });
@@ -35,14 +40,40 @@ export default function Header() {
 
         if (!keycloak.authenticated) {
           window.location.href = "/login";
+          return;
         }
+
+        const token = keycloak.tokenParsed;
+
+        const fullName =
+          token.name || token.preferred_username || "User";
+
+        // roles
+        const roles = token.realm_access?.roles || [];
+        const role = roles[0] || "User";
+
+        // initials (first + last letter)
+        const nameParts = fullName.split(" ");
+        const first = nameParts[0]?.charAt(0) || "";
+        const last =
+          nameParts.length > 1
+            ? nameParts[nameParts.length - 1]?.charAt(0)
+            : nameParts[0]?.charAt(1) || "";
+
+        const initials = (first + last).toUpperCase();
+
+        setUser({
+          name: fullName,
+          role: role,
+          initials: initials,
+        });
       } catch (err) {
-        console.error("Keycloak init failed:", err);
+        console.error("Keycloak error:", err);
         window.location.href = "/login";
       }
     };
 
-    checkAuth();
+    loadUser();
   }, []);
 
   return (
@@ -90,12 +121,12 @@ export default function Header() {
             className="flex items-center cursor-pointer"
           >
             <div className="w-7 h-7 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm">
-              TB
+              {user.initials}
             </div>
 
             <div className="pl-1 hidden sm:block">
-              <h3 className="text-sm">Dinesh</h3>
-              <p className="text-xs text-gray-400">User</p>
+              <h3 className="text-sm">{user.name}</h3>
+              <p className="text-xs text-gray-400">{user.role}</p>
             </div>
           </div>
 
