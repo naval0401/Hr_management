@@ -1,7 +1,5 @@
 'use client';
 import { useState } from 'react';
-import Header from '../components/Header';
-import Sidebar from '../components/Sidebar';
 import { supabase } from '../../lib/supabase'; 
 
 export default function LeaveForm() {
@@ -10,6 +8,7 @@ export default function LeaveForm() {
     fromDate: '',
     toDate: '',
     reason: '',
+    status: 'pending',
   });
 
   const [submitted, setSubmitted] = useState(false);
@@ -38,6 +37,7 @@ export default function LeaveForm() {
           from_date: formData.fromDate,
           to_date: formData.toDate,
           reason: formData.reason,
+          status: 'pending',
         },
       ]);
 
@@ -55,9 +55,7 @@ export default function LeaveForm() {
 
   return (
     <div className="relative min-h-screen bg-gray-100">
-      <Header />
-      <Sidebar />
-
+      
       <main className="pt-16 flex justify-center items-start p-6 w-full">
         {submitted ? (
           <div className="bg-white p-6 rounded shadow-md w-full max-w-md text-center">

@@ -1,6 +1,6 @@
 'use client';
 
-import { LayoutDashboard, CalendarCheck } from "lucide-react";
+import { LayoutDashboard, CalendarCheck, Clock  } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -19,7 +19,7 @@ export default function Sidebar() {
           icon={<LayoutDashboard size={18} />}
           text="Dashboard"
           href="/"
-          active={pathname === "/"}
+          active={pathname === "/" || pathname.startsWith("/dashboard")}
         />
 
         <SidebarItem
@@ -27,6 +27,12 @@ export default function Sidebar() {
           text="Leave"
           href="/leave"
           active={pathname === "/leave"}
+        />
+        <SidebarItem
+          icon={<Clock size={18} />}
+          text="Pending"
+          href="/pending"
+          active={pathname === "/pending"}
         />
       </div>
 
