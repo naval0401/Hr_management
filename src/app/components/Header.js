@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { PanelLeftCloseIcon, Moon, Bell } from "lucide-react";
 import keycloak from "@/lib/keycloak";
+import { useRouter } from "next/navigation";
 
 export default function Header() {
   const [open, setOpen] = useState(false);
@@ -13,6 +14,7 @@ export default function Header() {
   });
 
   const dropdownRef = useRef(null);
+  const router = useRouter();
 
   // Click outside dropdown close
   useEffect(() => {
@@ -30,7 +32,7 @@ export default function Header() {
       document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Keycloak auth + user data
+  // Keycloak auth and user data
   useEffect(() => {
     const loadUser = async () => {
       try {
@@ -133,7 +135,10 @@ export default function Header() {
           {/* DROPDOWN */}
           {open && (
             <div className="absolute right-0 mt-2 w-32 bg-white border border-gray-200 shadow-md rounded-md z-50">
-              <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100">
+              <button
+                onClick={() => router.push("/profile")}
+                className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100"
+              >
                 Profile
               </button>
 
