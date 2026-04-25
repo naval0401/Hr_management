@@ -1,7 +1,5 @@
 'use client';
 import { useState } from 'react';
-import { supabase } from '../../lib/supabase'; 
-
 export default function LeaveForm() {
   const [formData, setFormData] = useState({
     name: '',
@@ -19,39 +17,37 @@ export default function LeaveForm() {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    if (!formData.name || !formData.fromDate || !formData.toDate || !formData.reason) {
-      alert('Please fill all fields.');
-      return;
-    }
+  if (!formData.name || !formData.fromDate || !formData.toDate || !formData.reason) {
+    alert
+    return;
+  }
 
-    setLoading(true);
+  setLoading(true);
 
-    const { data, error } = await supabase
-      .from('leaves')
-      .insert([
-        {
-          name: formData.name,
-          from_date: formData.fromDate,
-          to_date: formData.toDate,
-          reason: formData.reason,
-          status: 'pending',
-        },
-      ]);
+  // API ko POST request bhejna
+  const res = await fetch("/api/leaves", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(formData),
+  });
 
-    setLoading(false);
+  const data = await res.json();
+  setLoading(false);
 
-    if (error) {
-      console.error(error);
-      alert('Error submitting leave. Please try again.');
-      return;
-    }
+ if (!res.ok) {
+    const err = await res.json();
+    console.error(err.error);
+    alert("Error submitting leave. Please try again.");
+    return;
+  }
 
-    console.log('Leave submitted:', data);
-    setSubmitted(true);
-  };
+  console.log("Leave submitted:", data);
+  setSubmitted(true);
+};
+
 
   return (
     <div className="relative min-h-screen bg-gray-100">
