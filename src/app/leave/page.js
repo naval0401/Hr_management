@@ -1,12 +1,14 @@
 'use client';
+
 import { useState } from 'react';
+import keycloak from '@/lib/keycloak';
+
 export default function LeaveForm() {
   const [formData, setFormData] = useState({
     name: '',
     fromDate: '',
     toDate: '',
     reason: '',
-    status: 'pending',
   });
 
   const [submitted, setSubmitted] = useState(false);
@@ -17,112 +19,122 @@ export default function LeaveForm() {
     setFormData({ ...formData, [name]: value });
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  if (!formData.name || !formData.fromDate || !formData.toDate || !formData.reason) {
-    alert
-    return;
-  }
+    if (!formData.name || !formData.fromDate || !formData.toDate || !formData.reason) {
+      alert("Please fill all fields");
+      return;
+    }
 
-  setLoading(true);
+    setLoading(true);
 
-  // API ko POST request bhejna
-  const res = await fetch("/api/leaves", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(formData),
-  });
+    try {
+      const res = await fetch("/api/leaves", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${keycloak.token}`,
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          fromDate: formData.fromDate,
+          toDate: formData.toDate,
+          reason: formData.reason,
+        }),
+      });
 
-  const data = await res.json();
-  setLoading(false);
+      const data = await res.json();
 
- if (!res.ok) {
-    const err = await res.json();
-    console.error(err.error);
-    alert("Error submitting leave. Please try again.");
-    return;
-  }
+      setLoading(false);
 
-  console.log("Leave submitted:", data);
-  setSubmitted(true);
-};
+      if (!res.ok) {
+        alert(data.error || "Error submitting leave");
+        return;
+      }
 
+      setSubmitted(true);
+    } catch (err) {
+      setLoading(false);
+      alert("Server error");
+    }
+  };
 
   return (
-    <div className="relative min-h-screen bg-gray-100">
-      
-      <main className="pt-16 flex justify-center items-start p-6 w-full">
-        {submitted ? (
-          <div className="bg-white p-6 rounded shadow-md w-full max-w-md text-center">
-            <h2 className="text-2xl font-bold mb-4 text-green-600">
-              Leave Submitted!
-            </h2>
-            <p>Thank you, {formData.name}. Your leave request has been recorded.</p>
-          </div>
-        ) : (
-          <form
-            className="bg-white p-6 rounded shadow-md w-full max-w-xl space-y-4"
-            onSubmit={handleSubmit}
-          >
-            <h2 className="text-2xl font-bold text-center mb-4">Leave Application</h2>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100 flex items-center justify-center p-6">
 
-            <div>
-              <label className="block mb-1 font-medium">Name</label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter your name"
-              />
+      <div className="w-full max-w-xl">
+
+        <div className="bg-white shadow-xl rounded-2xl p-8 border border-gray-100">
+
+          {submitted ? (
+            <div className="text-center">
+              <div className="text-green-500 text-5xl mb-3">✔</div>
+              <h2 className="text-2xl font-bold text-green-600 mb-2">
+                Leave Submitted!
+              </h2>
+              <p className="text-gray-600">
+                Your request has been successfully recorded.
+              </p>
             </div>
+          ) : (
+            <>
+              <h2 className="text-2xl font-bold text-gray-800 text-center mb-6">
+                Leave Application
+              </h2>
 
-            <div>
-              <label className="block mb-1 font-medium">From Date</label>
-              <input
-                type="date"
-                name="fromDate"
-                value={formData.fromDate}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+              <form onSubmit={handleSubmit} className="space-y-4">
 
-            <div>
-              <label className="block mb-1 font-medium">To Date</label>
-              <input
-                type="date"
-                name="toDate"
-                value={formData.toDate}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  placeholder="Enter your name"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
 
-            <div>
-              <label className="block mb-1 font-medium">Reason</label>
-              <textarea
-                name="reason"
-                value={formData.reason}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Reason for leave"
-              />
-            </div>
+                <input
+                  type="date"
+                  name="fromDate"
+                  value={formData.fromDate}
+                  onChange={handleChange}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
 
-            <button
-              type="submit"
-              className={`w-full bg-blue-500 text-white font-bold py-2 rounded hover:bg-blue-600 transition
-                ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-              disabled={loading}
-            >
-              {loading ? 'Submitting...' : 'Submit Leave'}
-            </button>
-          </form>
-        )}
-      </main>
+                <input
+                  type="date"
+                  name="toDate"
+                  value={formData.toDate}
+                  onChange={handleChange}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
+
+                <textarea
+                  name="reason"
+                  value={formData.reason}
+                  onChange={handleChange}
+                  placeholder="Write your reason..."
+                  rows={4}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className={`w-full py-3 rounded-lg text-white font-semibold transition
+                    ${loading ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"}`}
+                >
+                  {loading ? "Submitting..." : "Submit Leave"}
+                </button>
+
+              </form>
+            </>
+          )}
+
+        </div>
+
+      </div>
     </div>
   );
 }

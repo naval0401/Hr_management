@@ -21,18 +21,18 @@ export default function ProfilePage() {
         const username = token.preferred_username || "N/A";
 
         const roles = token.realm_access?.roles || [];
+        console.log(token)
 
         // 🔥 GROUP SE LOCATION
         let groups = token.groups || [];
 
-        // clean "/nainital" → "nainital"
         const locations = groups.map(g =>
-          g.replace("/", "").replace("-", " ")
+          g.replace(/\//g, ", ").replace(/-/g, " ")
         );
 
         // final display string
         const locationText =
-          locations.length > 0 ? locations.join(", ") : "N/A";
+          locations.length > 0 ? locations.join(", ").replace(/^, /, "").trim() : "not available";
 
         setUser({
           name,

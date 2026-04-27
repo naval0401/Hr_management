@@ -15,7 +15,7 @@ export default function Layout({ children }) {
         <Header />
 
         {/* Page content */}
-        <main className="pt-16 p-6">
+        <main className=" p-6">
           {children}
         </main>
 

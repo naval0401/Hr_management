@@ -40,7 +40,7 @@ export default function Providers({ children }) {
         setInitDone(true);
       });
 
-    // session end hone se 30 second pahle token refresh kar deta hai
+    // session end hone se 30 second pahle token refresh karne ke liye
     const interval = setInterval(() => {
       if (keycloak?.authenticated) {
         keycloak.updateToken(30).catch(() => {

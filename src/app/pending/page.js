@@ -1,32 +1,83 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import keycloak from '@/lib/keycloak';
 
 export default function PendingPage() {
   const [leaves, setLeaves] = useState([]);
 
+  // ✅ Fetch only when auth + token ready
   useEffect(() => {
-    fetchLeaves();
+    if (keycloak?.authenticated && keycloak?.token) {
+      fetchLeaves();
+    }
+  }, [keycloak?.authenticated, keycloak?.token]);
+
+  // ✅ Token refresh (IMPORTANT - prevents 401)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (keycloak?.authenticated) {
+        keycloak.updateToken(30).catch(() => {
+          console.log("Token expired");
+          keycloak.logout();
+        });
+      }
+    }, 10000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const fetchLeaves = async () => {
-    const res = await fetch("/api/pending");   // API ko call
-    const data = await res.json();
-    setLeaves(data);
+    try {
+      if (!keycloak?.token) return;
+
+      const res = await fetch("/api/pending", {
+        headers: {
+          Authorization: `Bearer ${keycloak.token}`,
+        },
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        console.error(data.error);
+        setLeaves([]);
+        return;
+      }
+
+      setLeaves(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error(err);
+      setLeaves([]);
+    }
   };
 
   const handleStatusChange = async (id, newStatus) => {
-    const res = await fetch("/api/pending", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, status: newStatus }),
-    });
+    try {
+      const res = await fetch("/api/pending", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${keycloak.token}`,
+        },
+        body: JSON.stringify({ id, status: newStatus }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    setLeaves(leaves.map(leave =>
-      leave.id === id ? { ...leave, status: newStatus } : leave
-    ));
+      if (!res.ok) {
+        console.error(data.error);
+        return;
+      }
+
+      setLeaves((prev) =>
+        prev.map((leave) =>
+          leave.id === id ? { ...leave, status: newStatus } : leave
+        )
+      );
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
