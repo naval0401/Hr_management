@@ -1,26 +1,51 @@
 @import "tailwindcss";
 
+/* LIGHT MODE */
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+
+  /* TEXT SYSTEM */
+  --text: #111111;
+  --text-muted: #6b7280;
+
+  /* UI COLORS */
+  --border: rgba(0, 0, 0, 0.12);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* DARK MODE */
+.dark {
+  --background: #0a0a0a;
+
+  /* TEXT SYSTEM */
+  --text: #ffffff;
+  --text-muted: #9ca3af;
+
+  /* UI COLORS */
+  --border: rgba(255, 255, 255, 0.12);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+input[type="date"] {
+  color: var(--text-muted);
 }
 
+input[type="date"]::-webkit-datetime-edit {
+  color: var(--text-muted);
+}
+
+/* when value is selected */
+input[type="date"]:valid {
+  color: var(--text-muted);
+}
+
+/* calendar icon */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: grayscale(1);
+  opacity: 0.6;
+  cursor: pointer;
+}
+
+/* GLOBAL BACKGROUND */
 body {
   background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  transition: all 0.3s ease;
 }

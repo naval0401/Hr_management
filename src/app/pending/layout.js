@@ -1,25 +1,12 @@
-import Header from '../components/Header';
-import Sidebar from '../components/Sidebar';
+import Layout from "../components/Layout";
 
-export default function Layout({ children }) {
+export default function PendingLayout({ children }) {
   return (
     <div className="min-h-screen bg-gray-100">
-
-      {/* Sidebar */}
-      <Sidebar />
-
-      {/* Main content */}
-      <div className="ml-[250px]">
-
-        {/* Header */}
-        <Header />
-
-        {/* Page content */}
-        <main className="p-4">
-          {children}
-        </main>
-
-      </div>
+      <Layout>
+      {children}
+    </Layout>
+          
     </div>
   );
 }

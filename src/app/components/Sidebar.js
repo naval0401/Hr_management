@@ -1,25 +1,39 @@
 'use client';
 
-import { LayoutDashboard, CalendarCheck, Clock  } from "lucide-react";
+import { LayoutDashboard, CalendarCheck, Clock } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 
-export default function Sidebar() {
-  const pathname = usePathname(); // current path
+export default function Sidebar({ collapsed }) {
+  const pathname = usePathname();
 
   return (
-    <div className="w-[250px] bg-white border border-gray-200 fixed top-0 h-full p-3 hidden md:block">
+    <div
+      className={`bg-[var(--background)] text-[var(--text)] border border-[var(--border)] fixed top-0 h-full p-3 hidden md:block transition-all duration-300 
+      ${collapsed ? "w-[80px]" : "w-[250px]"}`}
+    >
 
-      <div className="flex items-center gap-2 border-b border-gray-200 h-13 px-3">
-        <h2 className="text-blue-600 font-semibold text-lg">VHC</h2>
+      {/* LOGO */}
+      <div className="flex items-center gap-2 border-b border-[var(--border)] h-13 px-3">
+        <Image src="/logo.png" alt="logo" width={40} height={40} />
+
+        {!collapsed && (
+          <h2 className="text-blue-600 dark:text-blue-400 font-semibold text-lg">
+            VHC
+          </h2>
+        )}
       </div>
 
+      {/* MENU */}
       <div className="mt-4 mb-6">
+
         <SidebarItem
           icon={<LayoutDashboard size={18} />}
           text="Dashboard"
           href="/"
           active={pathname === "/" || pathname.startsWith("/dashboard")}
+          collapsed={collapsed}
         />
 
         <SidebarItem
@@ -27,26 +41,34 @@ export default function Sidebar() {
           text="Leave"
           href="/leave"
           active={pathname === "/leave"}
+          collapsed={collapsed}
         />
+
         <SidebarItem
           icon={<Clock size={18} />}
           text="Pending"
           href="/pending"
           active={pathname === "/pending"}
+          collapsed={collapsed}
         />
+
       </div>
 
     </div>
   );
 }
 
-const SidebarItem = ({ icon, text, href, active }) => (
+const SidebarItem = ({ icon, text, href, active, collapsed }) => (
   <Link
     href={href}
-    className={`flex items-center gap-2 h-9 px-3 rounded cursor-pointer mb-1
-      ${active ? "bg-blue-50 border-l-4 border-blue-600 text-blue-600" : "text-gray-600 hover:bg-gray-100"}`}
+    className={`flex items-center gap-2 h-9 px-3 rounded cursor-pointer mb-1 transition-all
+      ${
+        active
+          ? "bg-blue-50 dark:bg-gray-800 border-l-4 border-blue-600 text-blue-600 "
+          : "text-[var(--text)] hover:bg-white/5"
+      }`}
   >
     {icon}
-    <span className="text-sm">{text}</span>
+    {!collapsed && <span className="text-sm">{text}</span>}
   </Link>
 );

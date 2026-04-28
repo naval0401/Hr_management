@@ -6,14 +6,12 @@ import keycloak from '@/lib/keycloak';
 export default function PendingPage() {
   const [leaves, setLeaves] = useState([]);
 
-  // ✅ Fetch only when auth + token ready
   useEffect(() => {
     if (keycloak?.authenticated && keycloak?.token) {
       fetchLeaves();
     }
   }, [keycloak?.authenticated, keycloak?.token]);
 
-  // ✅ Token refresh (IMPORTANT - prevents 401)
   useEffect(() => {
     const interval = setInterval(() => {
       if (keycloak?.authenticated) {
@@ -81,13 +79,14 @@ export default function PendingPage() {
   };
 
   return (
-    <div className="pt-16 p-6 bg-white min-h-screen rounded-2xl">
-      <div className="mb-10 bg-white p-4 rounded-xl shadow-sm flex justify-between items-center">
+    <div className="pt-16 p-6 bg-[var(--background)] text-[var(--text)] min-h-screen ">
+
+      <div className="mb-10 bg-[var(--card)] border border-[var(--border)] p-4 rounded-xl shadow-sm flex justify-between items-center">
         <div>
-          <h1 className="text-xl font-semibold text-gray-800">
+          <h1 className="text-xl font-semibold text-[var(--text)]">
             Recent Leave Requests
           </h1>
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-[var(--text-muted)]">
             Overview of all submitted leaves
           </p>
         </div>
@@ -107,12 +106,24 @@ export default function PendingPage() {
         {leaves.map((leave) => (
           <div
             key={leave.id}
-            className="grid grid-cols-5 items-center bg-white px-6 py-4 rounded-xl shadow-sm hover:shadow-md transition"
+            className="grid grid-cols-5 items-center bg-[var(--card)] border border-[var(--border)] px-6 py-4 rounded-xl shadow-sm hover:shadow-md transition"
           >
-            <div className="font-medium text-gray-800">{leave.name}</div>
-            <div className="text-gray-600">{leave.reason}</div>
-            <div className="text-gray-600">{formatDate(leave.from_date)}</div>
-            <div className="text-gray-600">{formatDate(leave.to_date)}</div>
+            <div className="font-medium text-[var(--text)]">
+              {leave.name}
+            </div>
+
+            <div className="text-[var(--text-muted)]">
+              {leave.reason}
+            </div>
+
+            <div className="text-[var(--text-muted)]">
+              {formatDate(leave.from_date)}
+            </div>
+
+            <div className="text-[var(--text-muted)]">
+              {formatDate(leave.to_date)}
+            </div>
+
             <div>
               <span className="px-3 py-1 text-sm rounded-full bg-yellow-400 text-white shadow-sm">
                 {leave.status}
@@ -121,6 +132,7 @@ export default function PendingPage() {
           </div>
         ))}
       </div>
+
     </div>
   );
 }

@@ -36,12 +36,7 @@ export default function LeaveForm() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${keycloak.token}`,
         },
-        body: JSON.stringify({
-          name: formData.name,
-          fromDate: formData.fromDate,
-          toDate: formData.toDate,
-          reason: formData.reason,
-        }),
+        body: JSON.stringify(formData),
       });
 
       const data = await res.json();
@@ -61,25 +56,25 @@ export default function LeaveForm() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100 flex items-center justify-center p-6">
+    <div className="min-h-screen flex items-center justify-center p-6 bg-[var(--background)] text-[var(--text)] transition-colors duration-300">
 
       <div className="w-full max-w-xl">
 
-        <div className="bg-white shadow-xl rounded-2xl p-8 border border-gray-100">
+        <div className="bg-[var(--card)] border border-[var(--border)] shadow-xl rounded-2xl p-8">
 
           {submitted ? (
             <div className="text-center">
               <div className="text-green-500 text-5xl mb-3">✔</div>
-              <h2 className="text-2xl font-bold text-green-600 mb-2">
+              <h2 className="text-2xl font-bold text-green-500 mb-2">
                 Leave Submitted!
               </h2>
-              <p className="text-gray-600">
+              <p className="text-[var(--text-muted)]">
                 Your request has been successfully recorded.
               </p>
             </div>
           ) : (
             <>
-              <h2 className="text-2xl font-bold text-gray-800 text-center mb-6">
+              <h2 className="text-2xl font-bold text-[var(--text)] text-center mb-6">
                 Leave Application
               </h2>
 
@@ -91,7 +86,7 @@ export default function LeaveForm() {
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="Enter your name"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="w-full bg-transparent border border-[var(--border)] text-[var(--text)] rounded-lg px-4 py-3 outline-none"
                 />
 
                 <input
@@ -99,7 +94,9 @@ export default function LeaveForm() {
                   name="fromDate"
                   value={formData.fromDate}
                   onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="w-full bg-[var(--card)] border border-[var(--border)] text-[var(--text)] rounded-lg px-4 py-3 outline-none
+  dark:text-white dark:bg-gray-800"
+                  style={{ colorScheme: "dark" }}
                 />
 
                 <input
@@ -107,7 +104,9 @@ export default function LeaveForm() {
                   name="toDate"
                   value={formData.toDate}
                   onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="w-full bg-[var(--card)] border border-[var(--border)] text-[var(--text)] rounded-lg px-4 py-3 outline-none
+  dark:text-white dark:bg-gray-800"
+                  style={{ colorScheme: "dark" }}
                 />
 
                 <textarea
@@ -116,14 +115,13 @@ export default function LeaveForm() {
                   onChange={handleChange}
                   placeholder="Write your reason..."
                   rows={4}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="w-full bg-transparent border border-[var(--border)] text-[var(--text)] rounded-lg px-4 py-3 outline-none"
                 />
 
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`w-full py-3 rounded-lg text-white font-semibold transition
-                    ${loading ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"}`}
+                  className="w-full py-3 rounded-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 transition"
                 >
                   {loading ? "Submitting..." : "Submit Leave"}
                 </button>

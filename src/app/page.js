@@ -1,16 +1,13 @@
 import React from 'react'
-import Sidebar from './components/Sidebar'
-import Header from './components/Header'
+import Layout from './components/Layout'
 import Dashboard from './components/Dashboard'
 
 export default function page() {
   return (
     <div>
-      <div className=' ml-[250px]'>
-        <Header/>
-        <Dashboard/>
-      </div>
-        <Sidebar/>
+      <Layout>
+      <Dashboard />
+    </Layout>
     </div>
     
     
