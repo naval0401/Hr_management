@@ -1,10 +1,14 @@
 'use client';
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 
 export default function Layout({ children }) {
+
+  const pathname = usePathname();
+  const isLoginPage = pathname === "/login"; 
 
   const [collapsed, setCollapsed] = useState(() => {
     if (typeof window !== "undefined") {
@@ -14,7 +18,6 @@ export default function Layout({ children }) {
     return false;
   });
 
-  
   useEffect(() => {
     localStorage.setItem("sidebar", JSON.stringify(collapsed));
   }, [collapsed]);
@@ -22,17 +25,18 @@ export default function Layout({ children }) {
   return (
     <div className="flex">
 
-      <Sidebar collapsed={collapsed} />
+      {!isLoginPage && <Sidebar collapsed={collapsed} />}
 
       <div
         className={`flex-1 transition-all duration-300
-        ${collapsed ? "ml-[80px]" : "ml-[250px]"}`}
+        ${!isLoginPage && (collapsed ? "ml-[80px]" : "ml-[250px]")}`}
       >
-
-        <Header
-          collapsed={collapsed}
-          setCollapsed={setCollapsed}
-        />
+        {!isLoginPage && (
+          <Header
+            collapsed={collapsed}
+            setCollapsed={setCollapsed}
+          />
+        )}
 
         {children}
 

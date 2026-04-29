@@ -3,24 +3,16 @@
 /* LIGHT MODE */
 :root {
   --background: #ffffff;
-
-  /* TEXT SYSTEM */
   --text: #111111;
   --text-muted: #6b7280;
-
-  /* UI COLORS */
   --border: rgba(0, 0, 0, 0.12);
 }
 
 /* DARK MODE */
 .dark {
   --background: #0a0a0a;
-
-  /* TEXT SYSTEM */
   --text: #ffffff;
   --text-muted: #9ca3af;
-
-  /* UI COLORS */
   --border: rgba(255, 255, 255, 0.12);
 }
 
@@ -32,12 +24,10 @@ input[type="date"]::-webkit-datetime-edit {
   color: var(--text-muted);
 }
 
-/* when value is selected */
 input[type="date"]:valid {
   color: var(--text-muted);
 }
 
-/* calendar icon */
 input[type="date"]::-webkit-calendar-picker-indicator {
   filter: grayscale(1);
   opacity: 0.6;

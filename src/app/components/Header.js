@@ -33,49 +33,32 @@ export default function Header({ collapsed, setCollapsed }) {
       document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // user load
   useEffect(() => {
-    const loadUser = async () => {
-      try {
-        if (!keycloak?.authenticated) {
-          await keycloak.init({ onLoad: "check-sso" });
-        }
+    if (!keycloak?.authenticated) return;
 
-        if (!keycloak.authenticated) {
-          window.location.href = "/login";
-          return;
-        }
+    const token = keycloak.tokenParsed;
 
-        const token = keycloak.tokenParsed;
+    const fullName =
+      token.name || token.preferred_username || "User";
 
-        const fullName =
-          token.name || token.preferred_username || "User";
+    const roles = token.realm_access?.roles || [];
+    const role = roles[0] || "User";
 
-        const roles = token.realm_access?.roles || [];
-        const role = roles[0] || "User";
+    const nameParts = fullName.split(" ");
+    const first = nameParts[0]?.charAt(0) || "";
+    const last =
+      nameParts.length > 1
+        ? nameParts[nameParts.length - 1]?.charAt(0)
+        : nameParts[0]?.charAt(1) || "";
 
-        const nameParts = fullName.split(" ");
-        const first = nameParts[0]?.charAt(0) || "";
-        const last =
-          nameParts.length > 1
-            ? nameParts[nameParts.length - 1]?.charAt(0)
-            : nameParts[0]?.charAt(1) || "";
+    const initials = (first + last).toUpperCase();
 
-        const initials = (first + last).toUpperCase();
-
-        setUser({
-          name: fullName,
-          role: role,
-          initials: initials,
-        });
-      } catch (err) {
-        console.error("Keycloak error:", err);
-        window.location.href = "/login";
-      }
-    };
-
-    loadUser();
-  }, []);
+    setUser({
+      name: fullName,
+      role: role,
+      initials: initials,
+    });
+  }, [keycloak?.authenticated]);
 
   // INIT THEME
   useEffect(() => {

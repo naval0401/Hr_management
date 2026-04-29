@@ -21,18 +21,17 @@ export default function ProfilePage() {
         const username = token.preferred_username || "N/A";
 
         const roles = token.realm_access?.roles || [];
-        console.log(token)
 
-        // 🔥 GROUP SE LOCATION
         let groups = token.groups || [];
 
         const locations = groups.map(g =>
           g.replace(/\//g, ", ").replace(/-/g, " ")
         );
 
-        // final display string
         const locationText =
-          locations.length > 0 ? locations.join(", ").replace(/^, /, "").trim() : "not available";
+          locations.length > 0
+            ? locations.join(", ").replace(/^, /, "").trim()
+            : "not available";
 
         setUser({
           name,
@@ -51,27 +50,34 @@ export default function ProfilePage() {
   }, []);
 
   if (!user) {
-    return <div className="p-6">Loading...</div>;
+    return (
+      <div className="p-6 bg-[var(--background)] text-[var(--text)]">
+        Loading...
+      </div>
+    );
   }
 
   return (
-    <div className="pt-16 p-6 bg-white min-h-screen">
+    <div className="pt-16 p-6 min-h-screen bg-[var(--background)] text-[var(--text)]">
 
-      <div className="max-w-xl mx-auto bg-white p-6 rounded-xl shadow-md">
+      <div className="max-w-xl mx-auto bg-[var(--card)] border border-[var(--border)] p-6 rounded-xl shadow-md">
 
-        <h2 className="text-2xl font-bold mb-6">Profile Details</h2>
+        <h2 className="text-2xl font-bold mb-6 text-[var(--text)]">
+          Profile Details
+        </h2>
 
-        <div className="space-y-3 text-sm text-gray-700">
+        <div className="space-y-3 text-sm text-[var(--text-muted)]">
 
-          <p><strong>Name:</strong> {user.name}</p>
-          <p><strong>Username:</strong> {user.username}</p>
-          <p><strong>Email:</strong> {user.email}</p>
-          <p><strong>Roles:</strong> {user.roles.join(", ")}</p>
-          <p><strong>Location:</strong> {user.location}</p>
+          <p><span className=" font-semibold">Name:</span> {user.name}</p>
+          <p><span className=" font-semibold">Username:</span> {user.username}</p>
+          <p><span className=" font-semibold">Email:</span> {user.email}</p>
+          <p><span className=" font-semibold">Roles:</span> {user.roles.join(", ")}</p>
+          <p><span className=" font-semibold">Location:</span> {user.location}</p>
 
         </div>
 
       </div>
+
     </div>
   );
 }
