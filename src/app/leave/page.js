@@ -4,8 +4,8 @@ import { useState } from 'react';
 import keycloak from '@/lib/keycloak';
 
 export default function LeaveForm() {
+
   const [formData, setFormData] = useState({
-    name: '',
     fromDate: '',
     toDate: '',
     reason: '',
@@ -22,7 +22,8 @@ export default function LeaveForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.name || !formData.fromDate || !formData.toDate || !formData.reason) {
+    // ✅ name remove from validation
+    if (!formData.fromDate || !formData.toDate || !formData.reason) {
       alert("Please fill all fields");
       return;
     }
@@ -36,11 +37,10 @@ export default function LeaveForm() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${keycloak.token}`,
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(formData), // ✅ no name भेजना
       });
 
       const data = await res.json();
-
       setLoading(false);
 
       if (!res.ok) {
@@ -49,6 +49,7 @@ export default function LeaveForm() {
       }
 
       setSubmitted(true);
+
     } catch (err) {
       setLoading(false);
       alert("Server error");
@@ -78,24 +79,19 @@ export default function LeaveForm() {
                 Leave Application
               </h2>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
+              {/* ✅ Optional: user name दिखाओ */}
+              <p className="text-sm text-[var(--text-muted)] mb-4 text-center">
+                Logged in as: {keycloak.tokenParsed?.name}
+              </p>
 
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="Enter your name"
-                  className="w-full bg-transparent border border-[var(--border)] text-[var(--text)] rounded-lg px-4 py-3 outline-none"
-                />
+              <form onSubmit={handleSubmit} className="space-y-4">
 
                 <input
                   type="date"
                   name="fromDate"
                   value={formData.fromDate}
                   onChange={handleChange}
-                  className="w-full bg-[var(--card)] border border-[var(--border)] text-[var(--text)] rounded-lg px-4 py-3 outline-none
-  dark:text-white dark:bg-gray-800"
+                  className="w-full bg-[var(--card)] border border-[var(--border)] text-[var(--text)] rounded-lg px-4 py-3 outline-none dark:text-white dark:bg-gray-800"
                   style={{ colorScheme: "dark" }}
                 />
 
@@ -104,8 +100,7 @@ export default function LeaveForm() {
                   name="toDate"
                   value={formData.toDate}
                   onChange={handleChange}
-                  className="w-full bg-[var(--card)] border border-[var(--border)] text-[var(--text)] rounded-lg px-4 py-3 outline-none
-  dark:text-white dark:bg-gray-800"
+                  className="w-full bg-[var(--card)] border border-[var(--border)] text-[var(--text)] rounded-lg px-4 py-3 outline-none dark:text-white dark:bg-gray-800"
                   style={{ colorScheme: "dark" }}
                 />
 

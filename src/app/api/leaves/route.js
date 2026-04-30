@@ -19,8 +19,15 @@ export async function POST(request) {
     );
 
     const userId = decoded.sub;
-    const roles = decoded.realm_access?.roles || [];
 
+    // 🔥 NAME FROM KEYCLOAK TOKEN
+    const name =
+      decoded.name ||
+      decoded.preferred_username ||
+      "User";
+
+    // 🔥 ROLE FROM TOKEN
+    const roles = decoded.realm_access?.roles || [];
     const role = roles.includes("admin")
       ? "admin"
       : roles.includes("hr")
@@ -28,15 +35,15 @@ export async function POST(request) {
       : "user";
 
     const body = await request.json();
-    const { name, fromDate, toDate, reason } = body;
+    const { fromDate, toDate, reason } = body; // ❌ name removed
 
     const { data, error } = await supabase
       .from("leaves")
       .insert([
         {
-          name,
+          name, // ✅ auto from token
           user_id: userId,
-          role: role, // ✅ IMPORTANT
+          role: role,
           from_date: fromDate,
           to_date: toDate,
           reason,
@@ -46,7 +53,10 @@ export async function POST(request) {
       .select();
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json(
+        { error: error.message },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json(data, { status: 200 });

@@ -8,13 +8,13 @@ export default function DashboardPage() {
       <main className="flex-1 p-10">
 
         <h1 className="text-2xl font-bold text-[var(--text-muted)] text-left mb-12">
-          HR Dashboard
+          User Dashboard
         </h1>
 
         {/* Overview Cards */}
         <div className="grid grid-cols-3 gap-8 mb-12">
 
-          <div className="bg-[var(--card)] border border-[var(--border)] shadow-xl rounded-xl p-8 hover:scale-105 transition-transform">
+          {/*<div className="bg-[var(--card)] border border-[var(--border)] shadow-xl rounded-xl p-8 hover:scale-105 transition-transform">
             <h2 className="text-2xl font-bold text-blue-500 mb-2">
               Employees
             </h2>
@@ -24,7 +24,7 @@ export default function DashboardPage() {
             <button className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg">
               View Employees
             </button>
-          </div>
+          </div>*/}
 
           <div className="bg-[var(--card)] border border-[var(--border)] shadow-xl rounded-xl p-8 hover:scale-105 transition-transform">
             <h2 className="text-2xl font-bold text-purple-500 mb-2">
