@@ -1,30 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
-import keycloak from "@/lib/keycloak";
-
 export default function DashboardPage() {
-
-  // 🔥 AUTO SYNC EMPLOYEE ON LOGIN
-  useEffect(() => {
-    if (keycloak?.authenticated) {
-      syncEmployee();
-    }
-  }, [keycloak?.authenticated]);
-
-  const syncEmployee = async () => {
-    try {
-      await fetch("/api/sync-employees", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${keycloak.token}`,
-        },
-      });
-    } catch (err) {
-      console.log("SYNC ERROR:", err);
-    }
-  };
-
   return (
     <div className="min-h-screen flex flex-col transition-colors duration-300 bg-[var(--background)] text-[var(--text)]">
 
@@ -37,6 +13,18 @@ export default function DashboardPage() {
 
         {/* Overview Cards */}
         <div className="grid grid-cols-3 gap-8 mb-12">
+
+          {/*<div className="bg-[var(--card)] border border-[var(--border)] shadow-xl rounded-xl p-8 hover:scale-105 transition-transform">
+            <h2 className="text-2xl font-bold text-blue-500 mb-2">
+              Employees
+            </h2>
+            <p className="text-[var(--text-muted)]">
+              120 Active Employees
+            </p>
+            <button className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg">
+              View Employees
+            </button>
+          </div>*/}
 
           <div className="bg-[var(--card)] border border-[var(--border)] shadow-xl rounded-xl p-8 hover:scale-105 transition-transform">
             <h2 className="text-2xl font-bold text-purple-500 mb-2">

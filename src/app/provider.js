@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useState } from "react";
-import keycloak from "../lib/keycloak"; // 
+import keycloak from "../lib/keycloak";
 
 export default function Providers({ children }) {
   const [ready, setReady] = useState(false);
   const [status, setStatus] = useState("loading");
-  const [initDone, setInitDone] = useState(false); //
+  const [initDone, setInitDone] = useState(false);
 
   useEffect(() => {
     keycloak.init({
@@ -29,7 +29,6 @@ export default function Providers({ children }) {
           window.history.replaceState({}, document.title, window.location.pathname);
         }
 
-
         setReady(true);
         setStatus("ready");
       })
@@ -40,7 +39,7 @@ export default function Providers({ children }) {
         setInitDone(true);
       });
 
-    // session end hone se 30 second pahle token refresh karne ke liye
+    // 🔁 TOKEN REFRESH
     const interval = setInterval(() => {
       if (keycloak?.authenticated) {
         keycloak.updateToken(30).catch(() => {
@@ -53,6 +52,32 @@ export default function Providers({ children }) {
   }, []);
 
 
+  // 🔥 ✅ AUTO SYNC EMPLOYEE (YAHI MAIN ADDITION HAI)
+  useEffect(() => {
+    const syncEmployee = async () => {
+      try {
+        if (!keycloak?.authenticated || !keycloak?.token) return;
+
+        await fetch("/api/sync-employees", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${keycloak.token}`,
+          },
+        });
+
+        console.log("✅ EMPLOYEE SYNC DONE");
+      } catch (err) {
+        console.log("❌ SYNC ERROR:", err);
+      }
+    };
+
+    if (ready) {
+      syncEmployee();
+    }
+
+  }, [ready]);
+
+
   if (!initDone) {
     return (
       <div className="h-screen w-full flex flex-col items-center justify-center bg-gradient-to-br from-indigo-600 to-blue-600 text-white">
@@ -63,7 +88,6 @@ export default function Providers({ children }) {
     );
   }
 
-  // ERROR UI SHOW wala code
   if (status === "error") {
     return (
       <div className="h-screen flex items-center justify-center bg-red-50 text-red-600">
@@ -72,7 +96,6 @@ export default function Providers({ children }) {
     );
   }
 
-  // READY
   if (!ready) return null;
 
   return children;

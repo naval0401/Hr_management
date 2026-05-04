@@ -10,7 +10,7 @@ export async function POST(request) {
       return NextResponse.json({ error: "No token" }, { status: 401 });
     }
 
-    // ✅ Decode user from Keycloak token
+    // Decode user from Keycloak token
     const decoded = jwt.verify(
       token,
       process.env.KEYCLOAK_PUBLIC_KEY,
@@ -22,15 +22,12 @@ export async function POST(request) {
       employee_name:
         decoded.name ||
         decoded.preferred_username ||
-        decoded.email ||
         "User",
       email: decoded.email || "",
       status: "active",
     };
 
-    console.log("SYNC USER:", user);
-
-    // ✅ UPSERT (insert/update)
+    //  UPSERT (insert/update)
     const { error } = await supabase
       .from("employee")
       .upsert(user);

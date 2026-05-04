@@ -30,26 +30,31 @@ export default function AttendancePage() {
 
       const result = await res.json();
 
-      // ✅ FIX: ensure proper name mapping
       const cleaned = (result || []).map((item) => ({
         ...item,
-        employee_name:
-          item.employee_name ||
-          "User",
+        employee_name: item.employee_name || "User",
       }));
 
       setData(cleaned);
 
+      // ✅ FIXED: proper latest record logic
       const today = new Date().toISOString().split("T")[0];
-      const found = cleaned.find((item) => item.date === today);
-      setTodayRecord(found || null);
+
+      const todayRecords = cleaned.filter((item) => item.date === today);
+
+      const latest =
+        todayRecords.length > 0
+          ? todayRecords[todayRecords.length - 1]
+          : null;
+
+      setTodayRecord(latest);
     } catch (err) {
       console.log(err);
       setData([]);
     }
   };
 
-  // FILTER (NO CHANGE)
+  // FILTER
   const filteredData = useMemo(() => {
     if (!data.length) return [];
 
@@ -117,9 +122,9 @@ export default function AttendancePage() {
     }
   };
 
+  // ✅ FIXED BUTTON LOGIC
   const checkInDisabled = !!todayRecord?.check_in;
-  const checkOutDisabled =
-    !todayRecord?.check_in || !!todayRecord?.check_out;
+  const checkOutDisabled = !!todayRecord?.check_out;
 
   const presentCount = filteredData.filter((i) => i.check_in).length;
 
@@ -140,9 +145,7 @@ export default function AttendancePage() {
         <div>
           <h2 className="text-lg font-semibold">Mark Attendance (HR)</h2>
           <p className="text-sm text-[var(--text-muted)]">
-            {todayRecord?.check_in
-              ? "Checked In Today"
-              : "Not Checked In"}
+            {todayRecord?.check_in ? "Checked In Today" : "Not Checked In"}
           </p>
         </div>
 
@@ -152,9 +155,7 @@ export default function AttendancePage() {
             onClick={checkIn}
             disabled={checkInDisabled || loading}
             className={`px-5 py-2 rounded-lg text-white ${
-              checkInDisabled || loading
-                ? "bg-gray-400"
-                : "bg-green-600"
+              checkInDisabled || loading ? "bg-gray-400" : "bg-green-600"
             }`}
           >
             {loading ? "Loading..." : "Check In"}
@@ -164,9 +165,7 @@ export default function AttendancePage() {
             onClick={checkOut}
             disabled={checkOutDisabled || loading}
             className={`px-5 py-2 rounded-lg text-white ${
-              checkOutDisabled || loading
-                ? "bg-gray-400"
-                : "bg-red-600"
+              checkOutDisabled || loading ? "bg-gray-400" : "bg-red-600"
             }`}
           >
             {loading ? "Loading..." : "Check Out"}
@@ -223,9 +222,7 @@ export default function AttendancePage() {
               key={item.id || index}
               className="grid grid-cols-5 bg-[var(--card)] border border-[var(--border)] px-6 py-4 rounded-xl"
             >
-              {/* FIXED NAME DISPLAY */}
               <div>{item.employee_name}</div>
-
               <div>{formatDate(item.date)}</div>
               <div>{formatTime(item.check_in)}</div>
               <div>{formatTime(item.check_out)}</div>
