@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import keycloak from "@/lib/keycloak";
 
 export default function HRDashboard() {
 
@@ -27,6 +28,61 @@ export default function HRDashboard() {
     fetchPendingCount();
   }, []);
 
+  // AUTO SYNC EMPLOYEE ON PAGE LOAD
+  useEffect(() => {
+    let interval;
+
+    const syncEmployee = async () => {
+      try {
+        const token = keycloak?.token;
+
+        if (!token) return;
+
+        await fetch("/api/sync-employees", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        console.log("EMPLOYEE SYNC DONE");
+      } catch (err) {
+        console.log("SYNC ERROR:", err);
+      }
+    };
+
+    const initSync = async () => {
+      try {
+        if (!keycloak) return;
+
+        if (!keycloak.authenticated) {
+          await keycloak.init({
+            onLoad: "login-required",
+            checkLoginIframe: false,
+          });
+        }
+
+        await syncEmployee();
+
+      } catch (err) {
+        console.log("INIT SYNC ERROR:", err);
+      }
+    };
+
+    initSync();
+
+    // fallback retry (safe sync)
+    interval = setInterval(() => {
+      if (keycloak?.authenticated && keycloak?.token) {
+        syncEmployee();
+        clearInterval(interval);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+
+  }, []);
+
   const cards = [
     { title: "Employees", value: "120 Active Employees", color: "bg-blue-500", button: "View Employees", link: "/employees" },
     { title: "Leave Requests", value: `${pendingCount} Pending Approvals`, color: "bg-purple-500", button: "Manage Leaves", link: "/pending" },
@@ -42,7 +98,7 @@ export default function HRDashboard() {
       {/* TITLE */}
       <h1 className="text-2xl font-bold mb-6">HR Dashboard</h1>
 
-      {/* CARDS (SAME DESIGN AS BEFORE) */}
+      {/* CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 border-[var(--border)] lg:grid-cols-3 gap-6">
 
         {cards.map((card) => (

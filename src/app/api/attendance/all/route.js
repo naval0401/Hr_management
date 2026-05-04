@@ -2,37 +2,46 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import jwt from "jsonwebtoken";
 
-// ================= GET =================
-export async function GET(request) {
+// ================= GET (ALL USERS DATA) =================
+export async function GET() {
   try {
-    const token = request.headers.get("authorization")?.split(" ")[1];
-
-    const decoded = jwt.verify(
-      token,
-      process.env.KEYCLOAK_PUBLIC_KEY,
-      { algorithms: ["RS256"] }
-    );
-
-    const userId = decoded.sub;
-
+    // ✅ NO AUTH, NO FILTER — FULL TABLE DATA
     const { data, error } = await supabase
       .from("attendance")
       .select("*")
-      .eq("employee_id", userId)
       .order("date", { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      console.log("SUPABASE ERROR:", error);
+      return NextResponse.json(
+        { error: "Database error" },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json(data || []);
   } catch (err) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    console.log("SERVER ERROR:", err);
+    return NextResponse.json(
+      { error: "Server error" },
+      { status: 500 }
+    );
   }
 }
 
-// ================= POST =================
+// ================= POST (CHECK-IN / CHECK-OUT) =================
 export async function POST(request) {
   try {
-    const token = request.headers.get("authorization")?.split(" ")[1];
+    const token = request.headers
+      .get("authorization")
+      ?.split(" ")[1];
+
+    if (!token) {
+      return NextResponse.json(
+        { error: "No token" },
+        { status: 401 }
+      );
+    }
 
     const decoded = jwt.verify(
       token,
@@ -42,7 +51,18 @@ export async function POST(request) {
 
     const userId = decoded.sub;
 
+    // ✅ SAFE NAME EXTRACTION
+    const userName =
+      decoded?.name ||
+      decoded?.preferred_username ||
+      decoded?.email ||
+      (decoded?.given_name && decoded?.family_name
+        ? `${decoded.given_name} ${decoded.family_name}`
+        : null) ||
+      "User";
+
     const { type } = await request.json();
+    console.log("USER LOGIN:", userId, userName);
 
     const today = new Date().toISOString().split("T")[0];
 
@@ -53,7 +73,7 @@ export async function POST(request) {
       .eq("date", today)
       .maybeSingle();
 
-    // CHECK-IN
+    // ================= CHECK-IN =================
     if (type === "checkin") {
       if (existing?.check_in) {
         return NextResponse.json(
@@ -62,16 +82,20 @@ export async function POST(request) {
         );
       }
 
-      await supabase.from("attendance").insert({
-        employee_id: userId,
-        employee_name: decoded.name || "Unknown",
-        date: today,
-        check_in: new Date(),
-        status: "present",
-      });
+      const { error } = await supabase
+        .from("attendance")
+        .insert({
+          employee_id: userId,
+          employee_name: userName,
+          date: today,
+          check_in: new Date(),
+          status: "present",
+        });
+
+      if (error) throw error;
     }
 
-    // CHECK-OUT
+    // ================= CHECK-OUT =================
     else if (type === "checkout") {
       if (!existing?.check_in) {
         return NextResponse.json(
@@ -87,17 +111,20 @@ export async function POST(request) {
         );
       }
 
-      await supabase
+      const { error } = await supabase
         .from("attendance")
         .update({
           check_out: new Date(),
         })
         .eq("id", existing.id);
+
+      if (error) throw error;
     }
 
     return NextResponse.json({ success: true });
 
   } catch (err) {
+    console.log("POST ERROR:", err);
     return NextResponse.json(
       { error: "Server error" },
       { status: 500 }
