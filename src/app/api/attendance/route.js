@@ -2,10 +2,14 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import jwt from "jsonwebtoken";
 
-// ================= GET =================
+// GET
 export async function GET(request) {
   try {
     const token = request.headers.get("authorization")?.split(" ")[1];
+
+    if (!token) {
+      return NextResponse.json({ error: "No token" }, { status: 401 });
+    }
 
     const decoded = jwt.verify(
       token,
@@ -25,14 +29,21 @@ export async function GET(request) {
 
     return NextResponse.json(data || []);
   } catch (err) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json(
+      { error: err.message || "Unauthorized" },
+      { status: 401 }
+    );
   }
 }
 
-// ================= POST =================
+// POST
 export async function POST(request) {
   try {
     const token = request.headers.get("authorization")?.split(" ")[1];
+
+    if (!token) {
+      return NextResponse.json({ error: "No token" }, { status: 401 });
+    }
 
     const decoded = jwt.verify(
       token,
@@ -41,11 +52,12 @@ export async function POST(request) {
     );
 
     const userId = decoded.sub;
-
     const { type } = await request.json();
 
-    const today = new Date().toISOString().split("T")[0];
+    const now = new Date();
+    const today = now.toISOString().split("T")[0];
 
+    // check existing
     const { data: existing } = await supabase
       .from("attendance")
       .select("*")
@@ -53,7 +65,7 @@ export async function POST(request) {
       .eq("date", today)
       .maybeSingle();
 
-    // CHECK-IN
+    // ================= CHECK-IN =================
     if (type === "checkin") {
       if (existing?.check_in) {
         return NextResponse.json(
@@ -62,16 +74,49 @@ export async function POST(request) {
         );
       }
 
-      await supabase.from("attendance").insert({
+      let status = "Present";
+
+      if (
+        now.getHours() > 9 ||
+        (now.getHours() === 9 && now.getMinutes() > 30)
+      ) {
+        status = "Late";
+      }
+
+      // 🔥 ADD THIS (employee name fetch)
+      const { data: employee, error: empError } = await supabase
+        .from("employees")
+        .select("employee_name")
+        .eq("employee_id", userId)
+        .single();
+
+      if (empError) throw empError;
+
+      const { error } = await supabase.from("attendance").insert({
         employee_id: userId,
-        employee_name: decoded.name || "Unknown",
+        employee_name: employee?.employee_name, // ✅ FIX ADDED
         date: today,
-        check_in: new Date(),
-        status: "present",
+        check_in: now,
+        status: status,
       });
+
+      if (error) {
+        if (error.code === "23505") {
+          return NextResponse.json(
+            { error: "Already checked in today" },
+            { status: 400 }
+          );
+        }
+        throw error;
+      }
+
+      await supabase
+        .from("employees")
+        .update({ status: "active" })
+        .eq("employee_id", userId);
     }
 
-    // CHECK-OUT
+    // ================= CHECK-OUT =================
     else if (type === "checkout") {
       if (!existing?.check_in) {
         return NextResponse.json(
@@ -87,19 +132,36 @@ export async function POST(request) {
         );
       }
 
-      await supabase
+      let status = existing.status;
+
+      const checkInTime = new Date(existing.check_in);
+      const hoursWorked = (now - checkInTime) / (1000 * 60 * 60);
+
+      if (hoursWorked < 4) {
+        status = "Half Day";
+      }
+
+      const { error } = await supabase
         .from("attendance")
         .update({
-          check_out: new Date(),
+          check_out: now,
+          status: status,
         })
         .eq("id", existing.id);
+
+      if (error) throw error;
+
+      await supabase
+        .from("employees")
+        .update({ status: "inactive" })
+        .eq("employee_id", userId);
     }
 
     return NextResponse.json({ success: true });
 
   } catch (err) {
     return NextResponse.json(
-      { error: "Server error" },
+      { error: err.message || "Server error" },
       { status: 500 }
     );
   }

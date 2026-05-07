@@ -66,6 +66,7 @@ export default function Providers({ children }) {
         });
 
         console.log("✅ EMPLOYEE SYNC DONE");
+        console.log("TOKEN PARSED:", keycloak.tokenParsed);
       } catch (err) {
         console.log("❌ SYNC ERROR:", err);
       }

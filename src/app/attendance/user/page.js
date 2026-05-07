@@ -14,51 +14,67 @@ export default function AttendancePage() {
     }
   }, [keycloak?.authenticated]);
 
+  //  DATE 
+  const getToday = () => {
+    return new Date().toLocaleDateString("en-CA", {
+      timeZone: "Asia/Kolkata",
+    });
+  };
+
   const fetchData = async () => {
-    const res = await fetch("/api/attendance", {
-      headers: {
-        Authorization: `Bearer ${keycloak.token}`,
-      },
-    });
+    try {
+      const res = await fetch("/api/attendance", {
+        headers: {
+          Authorization: `Bearer ${keycloak.token}`,
+        },
+      });
 
-    const result = await res.json();
-    setData(result);
+      const result = await res.json();
+      setData(result || []);
 
-    // 🔥 TODAY RECORD FIND
-    const today = new Date().toISOString().split("T")[0];
-    const found = result.find((item) => item.date === today);
-    setTodayRecord(found || null);
+      const today = getToday();
+
+      //  SIMPLIFIED + SAFE
+      const todayRec = (result || []).find(
+        (item) => item.date?.split("T")[0] === today
+      );
+
+      setTodayRecord(todayRec || null);
+
+    } catch (err) {
+      console.log(err);
+      setData([]);
+    }
   };
 
-  const checkIn = async () => {
-    setLoading(true);
-    await fetch("/api/attendance", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${keycloak.token}`,
-      },
-      body: JSON.stringify({ type: "checkin" }),
-    });
-    setLoading(false);
-    fetchData();
+  //  COMMON HANDLER 
+  const handleAction = async (type) => {
+    try {
+      setLoading(true);
+
+      const res = await fetch("/api/attendance", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${keycloak.token}`,
+        },
+        body: JSON.stringify({ type }),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        alert(result.error);
+        return;
+      }
+
+      await fetchData();
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const checkOut = async () => {
-    setLoading(true);
-    await fetch("/api/attendance", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${keycloak.token}`,
-      },
-      body: JSON.stringify({ type: "checkout" }),
-    });
-    setLoading(false);
-    fetchData();
-  };
-
-  // 🔥 BUTTON LOGIC
+  //  BUTTON LOGIC
   const checkInDisabled = !!todayRecord?.check_in;
   const checkOutDisabled =
     !todayRecord?.check_in || !!todayRecord?.check_out;
@@ -68,7 +84,9 @@ export default function AttendancePage() {
 
       {/* HEADER */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold">Attendance Dashboard</h1>
+        <h1 className="text-2xl font-bold">
+          Attendance Dashboard
+        </h1>
         <p className="text-sm text-[var(--text-muted)]">
           Track your daily attendance
         </p>
@@ -78,9 +96,10 @@ export default function AttendancePage() {
       <div className="bg-[var(--card)] border border-[var(--border)] p-6 rounded-xl shadow-sm mb-8 flex flex-col sm:flex-row items-center justify-between gap-4">
 
         <div>
-          <h2 className="text-lg font-semibold">Mark Attendance</h2>
+          <h2 className="text-lg font-semibold">
+            Mark Attendance
+          </h2>
 
-          {/* 🔥 TODAY STATUS */}
           <p className="text-sm text-[var(--text-muted)]">
             {todayRecord?.check_in && !todayRecord?.check_out
               ? "You are checked in"
@@ -92,37 +111,34 @@ export default function AttendancePage() {
 
         <div className="flex gap-3">
 
-          {/* CHECK IN */}
           <button
-            onClick={checkIn}
+            onClick={() => handleAction("checkin")}
             disabled={checkInDisabled || loading}
-            className={`px-5 py-2 rounded-lg text-white transition ${
-              checkInDisabled
+            className={`px-5 py-2 rounded-lg text-white ${
+              checkInDisabled || loading
                 ? "bg-gray-400 cursor-not-allowed"
-                : "bg-green-600 hover:bg-green-700"
+                : "bg-green-600"
             }`}
           >
-            {checkInDisabled ? "Checked In" : "Check In"}
+            {loading ? "Processing..." : checkInDisabled ? "Checked In" : "Check In"}
           </button>
 
-          {/* CHECK OUT */}
           <button
-            onClick={checkOut}
+            onClick={() => handleAction("checkout")}
             disabled={checkOutDisabled || loading}
-            className={`px-5 py-2 rounded-lg text-white transition ${
-              checkOutDisabled
+            className={`px-5 py-2 rounded-lg text-white ${
+              checkOutDisabled || loading
                 ? "bg-gray-400 cursor-not-allowed"
-                : "bg-red-600 hover:bg-red-700"
+                : "bg-red-600"
             }`}
           >
-            {checkOutDisabled ? "Checked Out" : "Check Out"}
+            {loading ? "Processing..." : checkOutDisabled ? "Checked Out" : "Check Out"}
           </button>
 
         </div>
-
       </div>
 
-      {/* TABLE HEADER */}
+      {/* TABLE */}
       <div className="grid grid-cols-4 bg-blue-600 text-white px-6 py-3 rounded-xl text-sm font-semibold mb-3">
         <div>Date</div>
         <div>Check In</div>
@@ -130,42 +146,23 @@ export default function AttendancePage() {
         <div>Status</div>
       </div>
 
-      {/* DATA ROWS */}
       <div className="space-y-3">
         {data.length === 0 ? (
-          <div className="text-center text-[var(--text-muted)] py-10">
+          <div className="text-center py-10 text-[var(--text-muted)]">
             No attendance records found
           </div>
         ) : (
           data.map((item) => (
             <div
               key={item.id}
-              className="grid grid-cols-4 bg-[var(--card)] border border-[var(--border)] px-6 py-4 rounded-xl shadow-sm hover:shadow-md transition"
+              className="grid grid-cols-4 bg-[var(--card)] border border-[var(--border)] px-6 py-4 rounded-xl"
             >
-              <div>{formatDate(item.date)}</div>
+              <div>{item.date?.split("T")[0]}</div>
               <div>{formatTime(item.check_in)}</div>
               <div>{formatTime(item.check_out)}</div>
 
-              {/* 🔥 SMART STATUS */}
-              <div>
-                {item.check_in && !item.check_out && (
-                  <span className="px-3 py-1 text-xs rounded-full bg-yellow-500 text-white">
-                    Working
-                  </span>
-                )}
-
-                {item.check_out && (
-                  <span className="px-3 py-1 text-xs rounded-full bg-green-600 text-white">
-                    Completed
-                  </span>
-                )}
-
-                {!item.check_in && (
-                  <span className="px-3 py-1 text-xs rounded-full bg-gray-400 text-white">
-                    Absent
-                  </span>
-                )}
-              </div>
+              {/* USE DB STATUS  */}
+              <div>{item.status || "-"}</div>
             </div>
           ))
         )}
@@ -175,20 +172,10 @@ export default function AttendancePage() {
   );
 }
 
-// helpers same
-function formatDate(date) {
-  const d = new Date(date);
-  return d.toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-}
-
+// helper
 function formatTime(time) {
   if (!time) return "-";
-  const d = new Date(time);
-  return d.toLocaleTimeString("en-IN", {
+  return new Date(time).toLocaleTimeString("en-IN", {
     hour: "2-digit",
     minute: "2-digit",
   });

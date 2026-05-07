@@ -166,6 +166,13 @@ export default function Header({ collapsed, setCollapsed }) {
               </button>
 
               <button
+                onClick={() => router.push("/settings")}
+                className="w-full text-left px-3 py-2 text-sm hover:bg-black/5 dark:hover:bg-white/5"
+              >
+                Settings
+              </button>
+
+              <button
                 onClick={() => {
                   keycloak.logout({
                     redirectUri: `${window.location.origin}/login`,
@@ -173,7 +180,7 @@ export default function Header({ collapsed, setCollapsed }) {
                 }}
                 className="w-full text-left px-3 py-2 text-sm text-red-500 hover:bg-black/5 dark:hover:bg-white/5"
               >
-                Logout
+                Sign out
               </button>
 
             </div>

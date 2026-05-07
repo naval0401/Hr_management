@@ -7,12 +7,6 @@ export default function AttendancePage() {
   const [data, setData] = useState([]);
   const [selectedDate, setSelectedDate] = useState("");
   const [loading, setLoading] = useState(false);
-  const [todayRecord, setTodayRecord] = useState(null);
-
-  const isHR = useMemo(() => {
-    const roles = keycloak?.tokenParsed?.realm_access?.roles || [];
-    return roles.includes("hr");
-  }, [keycloak?.tokenParsed]);
 
   useEffect(() => {
     if (keycloak?.authenticated) {
@@ -29,111 +23,70 @@ export default function AttendancePage() {
       });
 
       const result = await res.json();
-
-      const cleaned = (result || []).map((item) => ({
-        ...item,
-        employee_name: item.employee_name || "User",
-      }));
-
-      setData(cleaned);
-
-      // ✅ FIXED: proper latest record logic
-      const today = new Date().toISOString().split("T")[0];
-
-      const todayRecords = cleaned.filter((item) => item.date === today);
-
-      const latest =
-        todayRecords.length > 0
-          ? todayRecords[todayRecords.length - 1]
-          : null;
-
-      setTodayRecord(latest);
+      setData(result || []);
     } catch (err) {
       console.log(err);
       setData([]);
     }
   };
 
-  // FILTER
+  //  SIMPLE & SAFE TODAY
+  const today = new Date().toLocaleDateString("en-CA");
+
+  //  CURRENT USER RECORD 
+  const myTodayRecord = (data || []).find(
+    (item) =>
+      item.employee_id === keycloak?.tokenParsed?.sub &&
+      item.date === today
+  );
+
+  //  FILTER
   const filteredData = useMemo(() => {
     if (!data.length) return [];
 
-    const today = new Date().toISOString().split("T")[0];
     const activeDate = selectedDate || today;
-
     return data.filter((item) => item.date === activeDate);
-  }, [data, selectedDate]);
+  }, [data, selectedDate, today]);
 
-  // CHECK-IN
-  const checkIn = async () => {
+  //  ACTION HANDLER
+  const handleAction = async (type) => {
     try {
       setLoading(true);
 
-      const res = await fetch("/api/attendance", {
+      const res = await fetch("/api/attendance/all", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${keycloak.token}`,
         },
-        body: JSON.stringify({ type: "checkin" }),
+        body: JSON.stringify({ type }),
       });
 
       const result = await res.json();
 
       if (!res.ok) {
-        alert(result?.error || "Check-in failed");
+        alert(result.error);
         return;
       }
 
+      // 🔥 IMPORTANT: reload data
       await fetchData();
+
     } catch (err) {
       console.log(err);
     } finally {
       setLoading(false);
     }
   };
-
-  // CHECK-OUT
-  const checkOut = async () => {
-    try {
-      setLoading(true);
-
-      const res = await fetch("/api/attendance", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${keycloak.token}`,
-        },
-        body: JSON.stringify({ type: "checkout" }),
-      });
-
-      const result = await res.json();
-
-      if (!res.ok) {
-        alert(result?.error || "Check-out failed");
-        return;
-      }
-
-      await fetchData();
-    } catch (err) {
-      console.log(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // ✅ FIXED BUTTON LOGIC
-  const checkInDisabled = !!todayRecord?.check_in;
-  const checkOutDisabled = !!todayRecord?.check_out;
-
-  const presentCount = filteredData.filter((i) => i.check_in).length;
 
   return (
     <div className="pt-16 p-6 min-h-screen bg-[var(--background)] text-[var(--text)]">
 
       {/* HEADER */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold">HR Attendance Dashboard</h1>
+        <h1 className="text-2xl font-bold">
+          HR Attendance Dashboard
+        </h1>
         <p className="text-sm text-[var(--text-muted)]">
           All users attendance tracking
         </p>
@@ -143,32 +96,51 @@ export default function AttendancePage() {
       <div className="bg-[var(--card)] border border-[var(--border)] p-6 rounded-xl shadow-sm mb-4 flex justify-between items-center">
 
         <div>
-          <h2 className="text-lg font-semibold">Mark Attendance (HR)</h2>
-          <p className="text-sm text-[var(--text-muted)]">
-            {todayRecord?.check_in ? "Checked In Today" : "Not Checked In"}
-          </p>
+          <h2 className="text-lg font-semibold">
+            Mark Attendance (HR)
+          </h2>
         </div>
 
         <div className="flex gap-3">
 
+          {/* CHECK IN */}
           <button
-            onClick={checkIn}
-            disabled={checkInDisabled || loading}
+            onClick={() => handleAction("checkin")}
+            disabled={loading || !!myTodayRecord?.check_in}
             className={`px-5 py-2 rounded-lg text-white ${
-              checkInDisabled || loading ? "bg-gray-400" : "bg-green-600"
+              loading || myTodayRecord?.check_in
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-green-600"
             }`}
           >
-            {loading ? "Loading..." : "Check In"}
+            {loading
+              ? "Processing..."
+              : myTodayRecord?.check_in
+              ? "Checked In"
+              : "Check In"}
           </button>
 
+          {/* CHECK OUT */}
           <button
-            onClick={checkOut}
-            disabled={checkOutDisabled || loading}
+            onClick={() => handleAction("checkout")}
+            disabled={
+              loading ||
+              !myTodayRecord?.check_in ||
+              !!myTodayRecord?.check_out
+            }
             className={`px-5 py-2 rounded-lg text-white ${
-              checkOutDisabled || loading ? "bg-gray-400" : "bg-red-600"
+              loading ||
+              !myTodayRecord?.check_in ||
+              myTodayRecord?.check_out
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-red-600"
             }`}
           >
-            {loading ? "Loading..." : "Check Out"}
+            {loading
+              ? "Processing..."
+              : myTodayRecord?.check_out
+              ? "Checked Out"
+              : "Check Out"}
           </button>
 
         </div>
@@ -178,10 +150,9 @@ export default function AttendancePage() {
       <div className="bg-[var(--card)] border border-[var(--border)] p-6 rounded-xl shadow-sm mb-6 flex justify-between items-center">
 
         <div>
-          <h2 className="text-lg font-semibold">Filter Attendance</h2>
-          <p className="text-sm text-[var(--text-muted)]">
-            Present Users: {presentCount}
-          </p>
+          <h2 className="text-lg font-semibold">
+            Filter Attendance
+          </h2>
         </div>
 
         <div className="flex gap-3">
@@ -213,7 +184,7 @@ export default function AttendancePage() {
       {/* TABLE BODY */}
       <div className="space-y-3">
         {filteredData.length === 0 ? (
-          <div className="text-center text-[var(--text-muted)] py-10">
+          <div className="text-center py-10 text-[var(--text-muted)]">
             No attendance found
           </div>
         ) : (
@@ -228,23 +199,28 @@ export default function AttendancePage() {
               <div>{formatTime(item.check_out)}</div>
 
               <div>
-                {item.check_in && !item.check_out
-                  ? "Working"
-                  : item.check_out
-                  ? "Completed"
-                  : "Absent"}
+                {item.status || "-"}
+                <span className="ml-2 text-xs text-gray-500">
+                  ({item.check_out
+                    ? "inactive"
+                    : item.check_in
+                    ? "active"
+                    : "inactive"})
+                </span>
               </div>
+
             </div>
           ))
         )}
       </div>
+
     </div>
   );
 }
 
-// helpers
 function formatDate(date) {
   if (!date) return "-";
+
   return new Date(date).toLocaleDateString("en-IN", {
     day: "2-digit",
     month: "short",
@@ -254,6 +230,7 @@ function formatDate(date) {
 
 function formatTime(time) {
   if (!time) return "-";
+
   return new Date(time).toLocaleTimeString("en-IN", {
     hour: "2-digit",
     minute: "2-digit",
