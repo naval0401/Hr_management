@@ -28,12 +28,12 @@ export default function HRDashboard() {
   }, []);
 
   const cards = [
-    { title: "Employees", value: "120 Active Employees", color: "bg-blue-500", button: "View Employees", link: "/employees" },
-    { title: "Leave Requests", value: `${pendingCount} Pending Approvals`, color: "bg-purple-500", button: "Manage Leaves", link: "/pending" },
-    { title: "Payroll", value: "Next cycle: 30 Apr", color: "bg-pink-500", button: "View Payroll", link: "/payroll" },
-    { title: "Attendance", value: "Today: 115 Present, 5 Absent", color: "bg-green-500", button: "View Attendance", link: "/attendance" },
-    { title: "Documents", value: "3 Pending Requests", color: "bg-yellow-500", button: "Manage Documents", link: "/documents" },
-    { title: "Performance", value: "Attrition Rate: 5%", color: "bg-indigo-500", button: "View Reports", link: "/performance" },
+    { title: "Employees", value: "120 Active Employees", color: "bg-blue-400", button: "View Employees", link: "/employees" },
+    { title: "Leave Requests", value: `${pendingCount} Pending Approvals`, color: "bg-purple-400", button: "Manage Leaves", link: "/pending" },
+    { title: "Payroll", value: "Next cycle: 30 Apr", color: "bg-pink-400", button: "View Payroll", link: "/payroll" },
+    { title: "Attendance", value: "Today: 115 Present, 5 Absent", color: "bg-green-400", button: "View Attendance", link: "/attendance" },
+    { title: "Documents", value: "3 Pending Requests", color: "bg-yellow-400", button: "Manage Documents", link: "/documents" },
+    { title: "Performance", value: "Attrition Rate: 5%", color: "bg-indigo-400", button: "View Reports", link: "/performance" },
   ];
 
   return (
