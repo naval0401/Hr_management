@@ -9,12 +9,15 @@ export const metadata = { // Define metadata for SEO (Search Engine Optimization
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en"><body className="antialiased">
-      <Providers>
-        <Layout>
-        {children}
-        </Layout>
+    <html lang="en">
+      <body className="antialiased">
+        <Providers>
+          <Layout>
+            {children}
+          </Layout>
         </Providers>
-        </body></html>
+      </body>
+    </html>
   );
 }
+
