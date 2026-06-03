@@ -10,17 +10,20 @@ export default function Layout({ children }) {
   const pathname = usePathname();
   const isLoginPage = pathname === "/login"; 
 
-  const [collapsed, setCollapsed] = useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("sidebar");
-      return saved ? JSON.parse(saved) : false;
-    }
-    return false;
-  });
+  const [collapsed, setCollapsed] = useState(false);
 
-  useEffect(() => {
+useEffect(() => {
+  if (typeof window !== "undefined") {
+    const saved = localStorage.getItem("sidebar");
+    if (saved) setCollapsed(JSON.parse(saved));
+  }
+}, []);
+
+useEffect(() => {
+  if (typeof window !== "undefined") {
     localStorage.setItem("sidebar", JSON.stringify(collapsed));
-  }, [collapsed]);
+  }
+}, [collapsed]);
 
   return (
     <div className="flex">

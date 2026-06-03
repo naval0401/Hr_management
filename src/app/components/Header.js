@@ -97,7 +97,7 @@ export default function Header({ collapsed, setCollapsed }) {
             Leave Details
           </h2>
 
-          <p className="text-xs text-[var(--text-muted)] hidden sm:block">
+          <p className="text-xs text-[var(--text)]">
             Dashboard
           </p>
         </div>

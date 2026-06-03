@@ -27,20 +27,27 @@ export default function HRDashboard() {
     fetchPendingCount();
   }, []);
 
-  const cards = [
-    { title: "Employees", value: "120 Active Employees", color: "bg-blue-400", button: "View Employees", link: "/employees" },
-    { title: "Leave Requests", value: `${pendingCount} Pending Approvals`, color: "bg-purple-400", button: "Manage Leaves", link: "/pending" },
-    { title: "Payroll", value: "Next cycle: 30 Apr", color: "bg-pink-400", button: "View Payroll", link: "/payroll" },
-    { title: "Attendance", value: "Today: 115 Present, 5 Absent", color: "bg-green-400", button: "View Attendance", link: "/attendance" },
-    { title: "Documents", value: "3 Pending Requests", color: "bg-yellow-400", button: "Manage Documents", link: "/documents" },
-    { title: "Performance", value: "Attrition Rate: 5%", color: "bg-indigo-400", button: "View Reports", link: "/performance" },
-  ];
+const cards = [
+  { title: "Employees", value: "120 Active Employees", color: "bg-slate-700", button: "View Employees", link: "/employees" },
+  { title: "Leave Requests", value: `${pendingCount} Pending Approvals`, color: "bg-indigo-700", button: "Manage Leaves", link: "/pending" },
+  { title: "Payroll", value: "Next cycle: 30 Apr", color: "bg-cyan-700", button: "View Payroll", link: "/payroll" },
+  { title: "Attendance", value: "Today: 115 Present, 5 Absent", color: "bg-emerald-700", button: "View Attendance", link: "/attendance" },
+  { title: "Documents", value: "3 Pending Requests", color: "bg-stone-700", button: "Manage Documents", link: "/documents" },
+  { title: "Performance", value: "Attrition Rate: 5%", color: "bg-zinc-700", button: "View Reports", link: "/performance" },
+];
+
+
+
+
+
+
+
 
   return (
     <div className="min-h-screen p-4 md:p-8">
 
       {/* TITLE */}
-      <h1 className="text-2xl font-bold mb-6">HR Dashboard</h1>
+      <h1 className="text-2xl  font-bold mb-6 text-[var(--text)]">HR Dashboard</h1>
 
       {/* CARDS (SAME DESIGN AS BEFORE) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 border-[var(--border)] lg:grid-cols-3 gap-6">
