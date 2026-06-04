@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { PanelLeftCloseIcon, Moon, Sun, Bell } from "lucide-react";
 import keycloak from "@/lib/keycloak";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function Header({ collapsed, setCollapsed }) {
   const [open, setOpen] = useState(false);
@@ -94,7 +95,7 @@ export default function Header({ collapsed, setCollapsed }) {
 
         <div>
           <h2 className="text-lg text-[var(--text)]">
-            Leave Details
+            VHC (HR)
           </h2>
 
           <p className="text-xs text-[var(--text)]">
@@ -123,14 +124,16 @@ export default function Header({ collapsed, setCollapsed }) {
           )}
         </div>
 
-        {/* NOTIFICATION */}
-        <div className="relative w-7 h-7 bg-blue-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
-          <Bell size={16} className="text-gray-700 dark:text-gray-300" />
+        {/* NOTIFICATION */}       
+<Link href="/notifications">
+  <div className="relative w-7 h-7 bg-blue-100 dark:bg-gray-800 rounded-full flex items-center justify-center cursor-pointer">
+    <Bell size={16} className="text-gray-700 dark:text-gray-300" />
+    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] px-1 rounded-full">
+      43
+    </span>
+  </div>
+</Link>
 
-          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] px-1 rounded-full">
-            43
-          </span>
-        </div>
 
         {/* USER */}
         <div className="relative" ref={dropdownRef}>

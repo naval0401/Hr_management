@@ -56,7 +56,7 @@ export default function CalendarPage() {
         <select
           value={month}
           onChange={(e) => setMonth(Number(e.target.value))}
-          className="border px-3 py-2 rounded"
+          className="border px-3 py-2 rounded bg-zinc-600 text-white"
         >
           {monthNames.map((m, i) => (
             <option key={i} value={i + 1}>
@@ -68,9 +68,9 @@ export default function CalendarPage() {
         <select
           value={year}
           onChange={(e) => setYear(Number(e.target.value))}
-          className="border px-3 py-2 rounded"
+          className="border px-3 py-2 rounded bg-zinc-600 text-white"
         >
-          {[2025, 2026, 2027].map((y) => (
+          {[2024, 2025, 2026, 2027].map((y) => (
             <option key={y} value={y}>
               {y}
             </option>
@@ -116,7 +116,7 @@ export default function CalendarPage() {
                     ? "bg-yellow-500 text-white"
                     : status === "absent"
                     ? "bg-red-500 text-white"
-                    : "bg-gray-300 text-black"
+                    : "bg-gray-300 text-black dark:bg-zinc-500 dark:text-white"
                 }`}
               >
                 {day}

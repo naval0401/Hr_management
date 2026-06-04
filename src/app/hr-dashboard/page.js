@@ -29,17 +29,12 @@ export default function HRDashboard() {
 
 const cards = [
   { title: "Employees", value: "120 Active Employees", color: "bg-slate-700", button: "View Employees", link: "/employees" },
-  { title: "Leave Requests", value: `${pendingCount} Pending Approvals`, color: "bg-indigo-700", button: "Manage Leaves", link: "/pending" },
+  { title: "Leave Requests", value: `${pendingCount} Pending Approvals`, color: "bg-indigo-900", button: "Manage Leaves", link: "/pending" },
   { title: "Payroll", value: "Next cycle: 30 Apr", color: "bg-cyan-700", button: "View Payroll", link: "/payroll" },
   { title: "Attendance", value: "Today: 115 Present, 5 Absent", color: "bg-emerald-700", button: "View Attendance", link: "/attendance" },
   { title: "Documents", value: "3 Pending Requests", color: "bg-stone-700", button: "Manage Documents", link: "/documents" },
   { title: "Performance", value: "Attrition Rate: 5%", color: "bg-zinc-700", button: "View Reports", link: "/performance" },
 ];
-
-
-
-
-
 
 
 

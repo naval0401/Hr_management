@@ -21,7 +21,7 @@ export default function DashboardPage() {
             <p className="text[var(--text-muted)text-black]">
               View employee attendance calendar
             </p>
-            <button className="mt-4 bg-slate-900 text-white px-4 py-2 rounded-lg">
+            <button className="mt-4 bg-slate-900 text-white px-4 py-2 rounded-lg, link/calendar">
               View Calendar
             </button>
           </div>
