@@ -248,6 +248,12 @@ export default function SettingsPage() {
             </div>
           </div>
         ))}
+        <button
+  onClick={() => setShowAddForm(true)}
+  className="mb-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+>
+  + Add Employee
+</button>
       </div>
     </div>
   );

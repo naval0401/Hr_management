@@ -1,9 +1,10 @@
 'use client';
 
-import { LayoutDashboard, CalendarCheck, Clock,  UserCheck, Calendar } from "lucide-react";
+import { LayoutDashboard, CalendarCheck, Clock,  UserCheck, Calendar, UsersIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
+import EmployeesPage from "../employees/page";
 
 export default function Sidebar({ collapsed }) {
   const pathname = usePathname();
@@ -33,6 +34,14 @@ export default function Sidebar({ collapsed }) {
           text="Dashboard"
           href="/"
           active={pathname === "/" || pathname.startsWith("/dashboard")}
+          collapsed={collapsed}
+        />
+        
+        <SidebarItem 
+          icon={<UsersIcon size={18} />}
+          text="Employees"
+          href="/employees"
+          active={pathname === "/employees  "}
           collapsed={collapsed}
         />
 
