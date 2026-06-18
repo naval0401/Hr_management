@@ -54,5 +54,16 @@ export const Schema = {
     status: "bool",
     created_at: "timestamptz",
     role: "text"
-  }
+  },
+
+notifications: {
+  id: "uuid",
+  employee_id: "uuid",   // foreign key -> employees.id
+  role: "text",
+  type: "text",
+  title: "text",
+  message: "text",
+  is_read: "bool",
+  created_at: "timestamptz"
+}
 };

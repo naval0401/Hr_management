@@ -64,10 +64,47 @@ const cards = [
             </Link>
 
           </div>
+          
         ))}
+<div className="col-span-full w-full bg-gradient-to-r from-indigo-900 via-sky-900 to-zinc-800 text-white py-14 px-10 mt-10">
+  <h2 className="text-4xl font-extrabold tracking-wide mb-10 flex items-center gap-3 justify-center drop-shadow-lg">
+    <span>📣</span> Announcements
+  </h2>
+
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 text-lg font-medium">
+    <div className="bg-white/20 backdrop-blur-md p-6 rounded-xl text-center hover:bg-white/30 transition-all duration-300 shadow-lg">
+      <h3 className="text-xl font-semibold mb-2">🎉 Holiday on 21 June</h3>
+      <p className="text-sm opacity-90">Office closed for all departments. Enjoy your day off!</p>
+    </div>
+
+    <div className="bg-white/20 backdrop-blur-md p-6 rounded-xl text-center hover:bg-white/30 transition-all duration-300 shadow-lg">
+      <h3 className="text-xl font-semibold mb-2">📢 New HR Policy Updated</h3>
+      <p className="text-sm opacity-90">Check your email for revised attendance and leave rules.</p>
+    </div>
+
+    <div className="bg-white/20 backdrop-blur-md p-6 rounded-xl text-center hover:bg-white/30 transition-all duration-300 shadow-lg">
+      <h3 className="text-xl font-semibold mb-2">📝 Training Session on 25 June</h3>
+      <p className="text-sm opacity-90">Mandatory skill‑building workshop for all employees.</p>
+    </div>
+
+    <div className="bg-white/20 backdrop-blur-md p-6 rounded-xl text-center hover:bg-white/30 transition-all duration-300 shadow-lg">
+      <h3 className="text-xl font-semibold mb-2">🏥 Annual Medical Checkup</h3>
+      <p className="text-sm opacity-90">Scheduled on 28 June. Bring your ID and health card.</p>
+    </div>
+
+
+
+
+  </div>
+</div>
+
+
+
 
       </div>
 
     </div>
+    
   );
+  
 }

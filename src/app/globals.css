@@ -2,9 +2,9 @@
 
 /* LIGHT MODE */
 :root {
-  --background: #fffdfd;
-  --text: #111111;
-  --text-muted: #6b7280;
+  --background: hwb(0 70% 30%);
+  --text: #000000;
+  --text-muted: #101216;
   --border: rgba(0, 0, 0, 0.12);
 }
 

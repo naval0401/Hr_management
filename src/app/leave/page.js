@@ -91,7 +91,7 @@ export default function LeaveForm() {
                   name="fromDate"
                   value={formData.fromDate}
                   onChange={handleChange}
-                  className="w-full bg-[var(--card)] border border-[var(--border)] text-[var(--text)] rounded-lg px-4 py-3 outline-none dark:text-white dark:bg-gray-800"
+                  className="w-full bg-[var(--card)] border border-[var(--border)] text-[var(--text)] rounded-lg px-4 py-3 outline-none dark:text-white dark:bg-gray-500"
                   style={{ colorScheme: "dark" }}
                 />
 
@@ -100,7 +100,7 @@ export default function LeaveForm() {
                   name="toDate"
                   value={formData.toDate}
                   onChange={handleChange}
-                  className="w-full bg-[var(--card)] border border-[var(--border)] text-[var(--text)] rounded-lg px-4 py-3 outline-none dark:text-white dark:bg-gray-800"
+                  className="w-full bg-[var(--card)] border border-[var(--border)] text-[var(--text)] rounded-lg px-4 py-3 outline-none dark:text-white dark:bg-gray-500"
                   style={{ colorScheme: "dark" }}
                 />
 

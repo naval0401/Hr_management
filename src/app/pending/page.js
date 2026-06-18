@@ -93,7 +93,7 @@ export default function PendingPage() {
       </div>
 
       {/* Header */}
-      <div className="grid grid-cols-5 items-center bg-orange-400 text-white text-sm font-semibold px-6 py-4 rounded-xl shadow-sm mb-4">
+      <div className="grid grid-cols-5 items-center bg-indigo-900 text-white text-sm font-semibold px-6 py-4 rounded-xl shadow-sm mb-4">
         <div>Employee</div>
         <div>Reason</div>
         <div>From</div>
@@ -125,7 +125,7 @@ export default function PendingPage() {
             </div>
 
             <div>
-              <span className="px-3 py-1 text-sm rounded-full bg-yellow-400 text-white shadow-sm">
+              <span className="px-3 py-1 text-sm rounded-full bg-zinc-700 text-white shadow-sm">
                 {leave.status}
               </span>
             </div>
@@ -136,6 +136,7 @@ export default function PendingPage() {
     </div>
   );
 }
+
 
 // Date format
 function formatDate(date) {

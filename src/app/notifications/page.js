@@ -1,18 +1,42 @@
 "use client";
 import { useEffect, useState } from "react";
+import keycloak from "@/lib/keycloak";
 
 export default function NotificationsPage() {
   const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/notifications")
+    fetch("/api/notifications", {
+      headers: {
+        Authorization: `Bearer ${keycloak.token}`,
+      },
+    })
       .then((res) => res.json())
-      .then((data) => setNotifications(data));
+      .then((data) => {
+        console.log(data,"him");
+        setNotifications(Array.isArray(data) ? data : []);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Failed to load notifications:", err);
+        setLoading(false);
+      });
   }, []);
 
   return (
     <div className="p-6 min-h-screen bg-[var(--background)] text-[var(--text)]">
       <h2 className="text-2xl font-bold mb-4">Notifications</h2>
+
+      {loading && (
+        <p className="text-sm text-gray-500 dark:text-gray-400">Loading...</p>
+      )}
+
+      {!loading && notifications.length === 0 && (
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          No notifications yet.
+        </p>
+      )}
 
       <div className="space-y-3">
         {notifications.map((n) => (

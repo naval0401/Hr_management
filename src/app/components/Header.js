@@ -14,6 +14,7 @@ export default function Header({ collapsed, setCollapsed }) {
     role: "",
     initials: "",
   });
+  const [notifCount, setNotifCount] = useState(0); // NEW
 
   const dropdownRef = useRef(null);
   const router = useRouter();
@@ -59,6 +60,25 @@ export default function Header({ collapsed, setCollapsed }) {
       role: role,
       initials: initials,
     });
+  }, [keycloak?.authenticated]);
+
+  // NEW: fetch unread notification count for the badge
+  useEffect(() => {
+    if (!keycloak?.authenticated) return;
+
+    fetch("/api/notifications", {
+      headers: {
+        Authorization: `Bearer ${keycloak.token}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          const unread = data.filter((n) => !n.is_read).length;
+          setNotifCount(unread);
+        }
+      })
+      .catch((err) => console.error("Failed to fetch notif count:", err));
   }, [keycloak?.authenticated]);
 
   // INIT THEME
@@ -124,16 +144,17 @@ export default function Header({ collapsed, setCollapsed }) {
           )}
         </div>
 
-        {/* NOTIFICATION */}       
-<Link href="/notifications">
-  <div className="relative w-7 h-7 bg-blue-100 dark:bg-gray-800 rounded-full flex items-center justify-center cursor-pointer">
-    <Bell size={16} className="text-gray-700 dark:text-gray-300" />
-    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] px-1 rounded-full">
-      43
-    </span>
-  </div>
-</Link>
-
+        {/* NOTIFICATION */}
+        <Link href="/notifications">
+          <div className="relative w-7 h-7 bg-blue-100 dark:bg-gray-800 rounded-full flex items-center justify-center cursor-pointer">
+            <Bell size={16} className="text-gray-700 dark:text-gray-300" />
+            {notifCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] px-1 rounded-full min-w-[16px] text-center">
+                {notifCount > 99 ? "99+" : notifCount}
+              </span>
+            )}
+          </div>
+        </Link>
 
         {/* USER */}
         <div className="relative" ref={dropdownRef}>
@@ -169,15 +190,14 @@ export default function Header({ collapsed, setCollapsed }) {
               </button>
 
               {/* SETTINGS*/}
-{keycloak?.tokenParsed?.preferred_username === "dinesh" && (
-  <button
-    onClick={() => router.push("/settings")}
-    className="w-full text-left px-3 py-2 text-sm hover:bg-black/5 dark:hover:bg-white/5"
-  >
-    Settings
-  </button>
-)}
-
+              {keycloak?.tokenParsed?.preferred_username === "dinesh" && (
+                <button
+                  onClick={() => router.push("/settings")}
+                  className="w-full text-left px-3 py-2 text-sm hover:bg-black/5 dark:hover:bg-white/5"
+                >
+                  Settings
+                </button>
+              )}
 
               <button
                 onClick={() => {

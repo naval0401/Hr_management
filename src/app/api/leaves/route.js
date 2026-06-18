@@ -20,13 +20,11 @@ export async function POST(request) {
 
     const userId = decoded.sub;
 
-    // 🔥 NAME FROM KEYCLOAK TOKEN
     const name =
       decoded.name ||
       decoded.preferred_username ||
       "User";
 
-    // 🔥 ROLE FROM TOKEN
     const roles = decoded.realm_access?.roles || [];
     const role = roles.includes("admin")
       ? "admin"
@@ -35,13 +33,13 @@ export async function POST(request) {
       : "user";
 
     const body = await request.json();
-    const { fromDate, toDate, reason } = body; // ❌ name removed
+    const { fromDate, toDate, reason } = body;
 
     const { data, error } = await supabase
       .from("leaves")
       .insert([
         {
-          name, // ✅ auto from token
+          name,
           user_id: userId,
           role: role,
           from_date: fromDate,
@@ -57,6 +55,26 @@ export async function POST(request) {
         { error: error.message },
         { status: 500 }
       );
+    }
+
+    // 🔔 Notify HR: matches your real notifications schema
+    // (id, employee_id, role, type, title, message, is_read, created_at)
+    // employee_id left null for now since it targets a ROLE (hr), not one person.
+    const { error: notifyError } = await supabase
+      .from("notifications")
+      .insert([
+        {
+          employee_id: null,
+          role: "hr",
+          type: "leave",
+          title: "New Leave Request",
+          message: `${name} applied for leave from ${fromDate} to ${toDate}.`,
+          is_read: false,
+        },
+      ]);
+
+    if (notifyError) {
+      console.error("Failed to create notification:", notifyError.message);
     }
 
     return NextResponse.json(data, { status: 200 });

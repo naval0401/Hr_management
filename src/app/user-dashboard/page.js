@@ -38,7 +38,7 @@ export default function DashboardPage() {
             </button>
           </div>
 
-          <div className="bg-cyan-500 border border[var(--card)] border border-[var(--border)] shadow-xl rounded-xl p-8 hover:scale-105 transition-transform">
+          <div className="bg-cyan-700 border border[var(--card)] border border-[var(--border)] shadow-xl rounded-xl p-8 hover:scale-105 transition-transform">
             <h2 className="text-2xl font-bold text-black-500 mb-2">
               Payroll
             </h2>
@@ -53,57 +53,38 @@ export default function DashboardPage() {
         </div>
 
        {/* Attendance Summary Table */}
-<div className="bg-[var(--card)] border border-[var(--border)] shadow-2xl rounded-xl p-8">
 
-  <h2 className="text-3xl font-bold text-[var(--text)] mb-6">
-    View Attendance Summary
+<div className="col-span-full w-full bg-gradient-to-r from-indigo-900 via-sky-900 to-zinc-800 text-white py-14 px-10 mt-10">
+  <h2 className="text-4xl font-extrabold tracking-wide mb-10 flex items-center gap-3 justify-center drop-shadow-lg">
+    <span>📣</span> Announcements
   </h2>
 
-  <table className="w-full border-collapse">
-    <thead>
-      <tr className="text-left border-b border-[var(--border)]">
-        <th className="p-4">Month</th>
-        <th className="p-4">Total Days</th>
-        <th className="p-4">Present</th>
-        <th className="p-4">Absent</th>
-        <th className="p-4">Leaves</th>
-        <th className="p-4">Late</th>
-        <th className="p-4">Attendance %</th>
-      </tr>
-    </thead>
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 text-lg font-medium">
+    <div className="bg-white/20 backdrop-blur-md p-6 rounded-xl text-center hover:bg-white/30 transition-all duration-300 shadow-lg">
+      <h3 className="text-xl font-semibold mb-2">🎉 Holiday on 21 June</h3>
+      <p className="text-sm opacity-90">Office closed for all departments. Enjoy your day off!</p>
+    </div>
 
-    <tbody>
-      <tr className="border-b border-[var(--border)] hover:bg-white/5">
-        <td className="p-4">May 2026</td>
-        <td className="p-4">31</td>
-        <td className="p-4">25</td>
-        <td className="p-4">3</td>
-        <td className="p-4">2</td>
-        <td className="p-4">1</td>
-        <td className="p-4">
-          <span className="bg-green-600 text-white px-3 py-1 rounded-full">
-            87%
-          </span>
-        </td>
-      </tr>
-      <tr className="border-b border-[var(--border)] hover:bg-white/5">
-        <td className="p-4">April 2026</td>
-        <td className="p-4">30</td>
-        <td className="p-4">27</td>
-        <td className="p-4">2</td>
-        <td className="p-4">1</td>
-        <td className="p-4">0</td>
-        <td className="p-4">
-          <span className="bg-green-600 text-white px-3 py-1 rounded-full">
-            92%
-          </span>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+    <div className="bg-white/20 backdrop-blur-md p-6 rounded-xl text-center hover:bg-white/30 transition-all duration-300 shadow-lg">
+      <h3 className="text-xl font-semibold mb-2">📢 New HR Policy Updated</h3>
+      <p className="text-sm opacity-90">Check your email for revised attendance and leave rules.</p>
+    </div>
 
+    <div className="bg-white/20 backdrop-blur-md p-6 rounded-xl text-center hover:bg-white/30 transition-all duration-300 shadow-lg">
+      <h3 className="text-xl font-semibold mb-2">📝 Training Session on 25 June</h3>
+      <p className="text-sm opacity-90">Mandatory skill‑building workshop for all employees.</p>
+    </div>
+
+    <div className="bg-white/20 backdrop-blur-md p-6 rounded-xl text-center hover:bg-white/30 transition-all duration-300 shadow-lg">
+      <h3 className="text-xl font-semibold mb-2">🏥 Annual Medical Checkup</h3>
+      <p className="text-sm opacity-90">Scheduled on 28 June. Bring your ID and health card.</p>
+    </div>
+
+
+
+
+  </div>
 </div>
-
 
       </main>
     </div>

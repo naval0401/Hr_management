@@ -1,11 +1,11 @@
 'use client';
 
-import { LayoutDashboard, CalendarCheck, Clock,  UserCheck, Calendar, UsersIcon } from "lucide-react";
+import { LayoutDashboard, CalendarCheck, Clock,  UserCheck, Calendar, UsersIcon, LucideSettings, DollarSign, IndianRupee } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import EmployeesPage from "../employees/page";
-
+import keycloak from "@/lib/keycloak";
 export default function Sidebar({ collapsed }) {
   const pathname = usePathname();
 
@@ -37,13 +37,17 @@ export default function Sidebar({ collapsed }) {
           collapsed={collapsed}
         />
         
-        <SidebarItem 
-          icon={<UsersIcon size={18} />}
-          text="Employees"
-          href="/employees"
-          active={pathname === "/employees  "}
-          collapsed={collapsed}
-        />
+{/* Employees PAGE visible only for HR */}
+{keycloak?.tokenParsed?.preferred_username === "dinesh"  && (
+  <SidebarItem
+    icon={<UsersIcon size={18} />}
+    text="Employees"
+    href="/employees"
+    active={pathname === "/employees"}
+    collapsed={collapsed}
+  />
+)}
+
 
         <SidebarItem
           icon={<CalendarCheck size={18} />}
@@ -52,6 +56,17 @@ export default function Sidebar({ collapsed }) {
           active={pathname === "/leave"}
           collapsed={collapsed}
         />
+
+{/* Employees PAGE visible only for HR */}
+{keycloak?.tokenParsed?.preferred_username === "vrish"  && (
+ <SidebarItem
+          icon={<IndianRupee size={18} />}
+          text="Advance Salary Request"
+          href="/advance-salary"
+          active={pathname === "/advance-salary"}
+          collapsed={collapsed}
+        />
+        )}
 
         <SidebarItem
           icon={<Clock size={18} />}
@@ -76,6 +91,16 @@ export default function Sidebar({ collapsed }) {
           collapsed={collapsed}
         />
 
+{/* SETTING PAGE visible only for HR */}
+{keycloak?.tokenParsed?.preferred_username === "dinesh"  && (
+ <SidebarItem
+          icon={< LucideSettings size={18} />}
+          text="settings"
+          href="/settings"
+          active={pathname === "/settings"}
+          collapsed={collapsed}
+        />
+)}
       </div>
 
     </div>

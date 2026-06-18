@@ -60,7 +60,7 @@ export default function EmployeesPage() {
       {/* STATS */}
       <div className="grid grid-cols-3 gap-6 mb-8">
 
-        <div className="bg-[var(--card)] border border-[var(--border)] p-6 rounded-xl">
+        <div className="bg-zinc-600 [var(--card)] border border-[var(--border)] p-6 rounded-xl">
           <p className="text-sm text-[var(--text-muted)]">Total Employees</p>
           <p className="text-3xl font-bold mt-2">{stats.total}</p>
         </div>
@@ -79,7 +79,7 @@ export default function EmployeesPage() {
 
       {/* LIST */}
       <h2 className="text-lg font-semibold mb-4">
-        Employees List
+        Employees Directory
       </h2>
 
       <div className="grid grid-cols-6 bg-blue-600 text-white px-6 py-3 rounded-xl text-sm font-semibold mb-3">

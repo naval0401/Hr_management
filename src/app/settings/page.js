@@ -8,7 +8,7 @@ export default function SettingsPage() {
   const [editRow, setEditRow] = useState(null);
   const [formData, setFormData] = useState({});
   const [success, setSuccess] = useState("");
-
+  const [showAddForm, setShowAddForm] = useState(false);
   // ================= FETCH =================
   useEffect(() => {
     const fetchEmployees = async () => {
@@ -199,6 +199,8 @@ export default function SettingsPage() {
               )}
             </div>
 
+            
+
             {/* STATUS */}
             <div>
               {editRow === emp.id ? (
@@ -254,6 +256,50 @@ export default function SettingsPage() {
 >
   + Add Employee
 </button>
+{showAddForm && (
+  <div className="bg-white p-6 rounded-lg shadow-lg border mt-4">
+    <h2 className="text-xl font-semibold mb-4">Add Employee</h2>
+
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <input
+        type="text"
+        placeholder="Employee Name"
+        className="border rounded-lg p-2"
+      />
+
+      <input
+        type="email"
+        placeholder="Email"
+        className="border rounded-lg p-2"
+      />
+
+      <input
+        type="text"
+        placeholder="Department"
+        className="border rounded-lg p-2"
+      />
+
+      <input
+        type="text"
+        placeholder="Designation"
+        className="border rounded-lg p-2"
+      />
+    </div>
+
+    <div className="flex gap-3 mt-4">
+      <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
+        Save
+      </button>
+
+      <button
+        onClick={() => setShowAddForm(false)}
+        className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg"
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+)}
       </div>
     </div>
   );
