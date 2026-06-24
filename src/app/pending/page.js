@@ -125,10 +125,22 @@ export default function PendingPage() {
             </div>
 
             <div>
-              <span className="px-3 py-1 text-sm rounded-full bg-zinc-700 text-white shadow-sm">
-                {leave.status}
-              </span>
-            </div>
+  <select
+    value={leave.status}
+    onChange={(e) => handleStatusChange(leave.id, e.target.value)}
+    className={`px-3 py-1 text-sm rounded-full shadow-sm cursor-pointer border-none outline-none font-medium ${
+      leave.status === "Approved"
+        ? "bg-green-500 text-white"
+        : leave.status === "Rejected"
+        ? "bg-red-500 text-white"
+        : "bg-yellow-500 text-black"
+    }`}
+  >
+    <option value="pending">pending</option>
+    <option value="Approved">Approved</option>
+    <option value="Rejected">Rejected</option>
+  </select>
+</div>
           </div>
         ))}
       </div>

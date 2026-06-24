@@ -42,19 +42,27 @@ export const Schema = {
     status: "text"
   },
 
-  employees: {
-    id: "uuid",
-    email: "text",
-    phone: "text",
-    employee_id: "text",
-    employee_name: "text",
-    designation: "text",
-    department: "text",
-    date_of_joining: "date",
-    status: "bool",
-    created_at: "timestamptz",
-    role: "text"
-  },
+employees: {
+  id: "uuid",
+  email: "text",
+  phone: "text",
+  employee_id: "text",
+  employee_name: "text",
+  designation: "text",
+  department: "text",
+  date_of_joining: "date",
+  status: "bool",
+  created_at: "timestamptz",
+  role: "text",
+  date_of_birth: "date",
+  address: "text",
+  emergency_contact_name: "text",
+  emergency_contact_phone: "text",
+  blood_group: "text",
+  employment_type: "text",
+  skills: "text",
+  documents_notes: "text"
+},
 
 notifications: {
   id: "uuid",
@@ -65,5 +73,34 @@ notifications: {
   message: "text",
   is_read: "bool",
   created_at: "timestamptz"
+},
+
+departments: {
+  id: "uuid",
+  name: "text",
+  description: "text",
+  created_at: "timestamptz"
+},
+
+designations: {
+  id: "uuid",
+  title: "text",
+  department_id: "uuid",   // foreign key -> departments.id
+  created_at: "timestamptz"
+},
+
+announcements: {
+  id: "uuid",
+  title: "text",
+  message: "text",
+  category: "text",
+  emoji: "text",
+  target_audience: "text",
+  event_date: "date",
+  is_pinned: "bool",
+  created_by: "text",
+  created_at: "timestamptz",
+  updated_at: "timestamptz"
 }
+
 };

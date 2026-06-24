@@ -26,11 +26,11 @@ function verifyToken(request) {
 
   return {
     userId: decoded.sub,
-    name: decoded.name || decoded.preferred_username || "User",
     role,
   };
 }
 
+// GET — anyone logged in can view the list of departments
 export async function GET(request) {
   try {
     const user = verifyToken(request);
@@ -39,20 +39,9 @@ export async function GET(request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // hr/admin see notifications where role = 'hr' or 'admin' or 'all'
-    // regular users see role = 'user' or 'all'
-    // (employee_id-specific targeting can be added later once the id mapping is confirmed)
-    let roleFilter;
-    if (user.role === "admin" || user.role === "hr") {
-      roleFilter = `role.eq.hr,role.eq.admin,role.eq.all`;
-    } else {
-      roleFilter = `role.eq.user,role.eq.all`;
-    }
-
     const { data, error } = await supabase
-      .from("notifications")
+      .from("departments")
       .select("*")
-      .or(roleFilter)
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -69,6 +58,7 @@ export async function GET(request) {
   }
 }
 
+// POST — only HR/admin can create a new department
 export async function POST(request) {
   try {
     const user = verifyToken(request);
@@ -82,20 +72,18 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { employee_id, role, title, message, type } = body;
+    const { name, description } = body;
+
+    if (!name) {
+      return NextResponse.json(
+        { error: "Department name is required" },
+        { status: 400 }
+      );
+    }
 
     const { data, error } = await supabase
-      .from("notifications")
-      .insert([
-        {
-          employee_id: employee_id || null,
-          role: role || "all",
-          title,
-          message,
-          type: type || "general",
-          is_read: false,
-        },
-      ])
+      .from("departments")
+      .insert([{ name, description }])
       .select();
 
     if (error) {
@@ -111,7 +99,9 @@ export async function POST(request) {
     );
   }
 }
-export async function PATCH(request) {
+
+// PUT — only HR/admin can edit an existing department
+export async function PUT(request) {
   try {
     const user = verifyToken(request);
 
@@ -119,11 +109,63 @@ export async function PATCH(request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id } = await request.json();
+    if (user.role !== "hr" && user.role !== "admin") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const body = await request.json();
+    const { id, name, description } = body;
+
+    if (!id || !name) {
+      return NextResponse.json(
+        { error: "id and name are required" },
+        { status: 400 }
+      );
+    }
+
+    const { data, error } = await supabase
+      .from("departments")
+      .update({ name, description })
+      .eq("id", id)
+      .select();
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json(data, { status: 200 });
+
+  } catch (err) {
+    return NextResponse.json(
+      { error: "Invalid or expired token" },
+      { status: 401 }
+    );
+  }
+}
+
+// DELETE — only HR/admin can delete a department
+export async function DELETE(request) {
+  try {
+    const user = verifyToken(request);
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    if (user.role !== "hr" && user.role !== "admin") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const body = await request.json();
+    const { id } = body;
+
+    if (!id) {
+      return NextResponse.json({ error: "id is required" }, { status: 400 });
+    }
 
     const { error } = await supabase
-      .from("notifications")
-      .update({ is_read: true })
+      .from("departments")
+      .delete()
       .eq("id", id);
 
     if (error) {

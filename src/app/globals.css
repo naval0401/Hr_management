@@ -2,10 +2,11 @@
 
 /* LIGHT MODE */
 :root {
-  --background: hwb(0 70% 30%);
+  --background: hwb(0 82% 18%);
   --text: #000000;
   --text-muted: #101216;
   --border: rgba(0, 0, 0, 0.12);
+  --card: #ffffff;
 }
 
 /* DARK MODE */
@@ -14,6 +15,7 @@
   --text: #ffffff;
   --text-muted: #9ca3af;
   --border: rgba(255, 255, 255, 0.12);
+  --card: #1f1f1f;
 }
 
 input[type="date"] {
@@ -39,3 +41,5 @@ body {
   background: var(--background);
   transition: all 0.3s ease;
 }
+
+

@@ -25,12 +25,19 @@ export async function POST(request) {
       decoded.preferred_username ||
       "User";
 
-    const roles = decoded.realm_access?.roles || [];
-    const role = roles.includes("admin")
-      ? "admin"
-      : roles.includes("hr")
-      ? "hr"
-      : "user";
+   const roles = decoded.realm_access?.roles || [];
+const username = decoded.preferred_username;
+
+let role;
+if (username === "vrish") {
+  role = "user"; // TEMPORARY fix, no Keycloak acess right now
+} else {
+  role = roles.includes("admin")
+    ? "admin"
+    : roles.includes("hr")
+    ? "hr"
+    : "user";
+}
 
     const body = await request.json();
     const { fromDate, toDate, reason } = body;
@@ -68,7 +75,7 @@ export async function POST(request) {
           role: "hr",
           type: "leave",
           title: "New Leave Request",
-          message: `${name} applied for leave from ${fromDate} to ${toDate}.`,
+          message: `${name} applied for leave — ${reason}`,
           is_read: false,
         },
       ]);

@@ -1,11 +1,12 @@
 'use client';
 
-import { LayoutDashboard, CalendarCheck, Clock,  UserCheck, Calendar, UsersIcon, LucideSettings, DollarSign, IndianRupee } from "lucide-react";
+import { LayoutDashboard, Calendar, UsersIcon, LucideSettings, ClipboardCheck, CalendarDays, Clock3, Megaphone } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import EmployeesPage from "../employees/page";
 import keycloak from "@/lib/keycloak";
+import LeaveForm from "../leave/page";
 export default function Sidebar({ collapsed }) {
   const pathname = usePathname();
 
@@ -49,34 +50,27 @@ export default function Sidebar({ collapsed }) {
 )}
 
 
-        <SidebarItem
-          icon={<CalendarCheck size={18} />}
-          text="Leave"
+{/* Employees PAGE visible only for HR */}
+{keycloak?.tokenParsed?.preferred_username === "vrish"  && (
+<SidebarItem
+          icon={<CalendarDays size={18} />}
+          text="leave"
           href="/leave"
           active={pathname === "/leave"}
           collapsed={collapsed}
         />
 
-{/* Employees PAGE visible only for HR */}
-{keycloak?.tokenParsed?.preferred_username === "vrish"  && (
- <SidebarItem
-          icon={<IndianRupee size={18} />}
-          text="Advance Salary Request"
-          href="/advance-salary"
-          active={pathname === "/advance-salary"}
-          collapsed={collapsed}
-        />
-        )}
+)}
 
         <SidebarItem
-          icon={<Clock size={18} />}
+          icon={<ClipboardCheck size={18} />}
           text="Pending"
           href="/pending"
           active={pathname === "/pending"}
           collapsed={collapsed}
         />
         <SidebarItem
-          icon={< UserCheck size={18} />}
+          icon={< Clock3 size={18} />}
           text="Attendance"
           href="/attendance"
           active={pathname === "/attendance"}
@@ -88,6 +82,14 @@ export default function Sidebar({ collapsed }) {
           text="Calendar"
           href="/calendar"
           active={pathname === "/calendar"}
+          collapsed={collapsed}
+        />
+
+        <SidebarItem
+          icon={<Megaphone size={18} />}
+          text="Announcements"
+          href="/announcements"
+          active={pathname === "/announcements"}
           collapsed={collapsed}
         />
 
