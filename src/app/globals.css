@@ -2,32 +2,49 @@
 
 /* LIGHT MODE */
 :root {
-  --background: hwb(0 82% 18%);
+  --background: hwb(0 88% 10%);
   --text: #000000;
   --text-muted: #101216;
   --border: rgba(0, 0, 0, 0.12);
   --card: #ffffff;
+  /* Shell — shared sidebar + header */
+  --shell: #1e293b;
+  --shell-text: #f8fafc;
+  --shell-text-muted: #94a3b8;
+  --shell-hover: rgba(255, 255, 255, 0.08);
+  --shell-active: rgba(255, 255, 255, 0.12);
+  --shell-border: rgba(255, 255, 255, 0.1);
+  --shell-accent: #a5b4fc;
+  --shell-icon-bg: rgba(255, 255, 255, 0.1);
 }
 
 /* DARK MODE */
 .dark {
-  --background: #292828;
+  --background: #363636;
   --text: #ffffff;
   --text-muted: #9ca3af;
   --border: rgba(255, 255, 255, 0.12);
   --card: #1f1f1f;
+  --shell: #121212;
+  --shell-text: #f1f5f9;
+  --shell-text-muted: #9ca3af;
+  --shell-hover: rgba(255, 255, 255, 0.06);
+  --shell-active: rgba(255, 255, 255, 0.1);
+  --shell-border: rgba(255, 255, 255, 0.08);
+  --shell-accent: #818cf8;
+  --shell-icon-bg: rgba(255, 255, 255, 0.08);
 }
 
 input[type="date"] {
-  color: var(--text-muted);
+  color: var(--text);
 }
 
 input[type="date"]::-webkit-datetime-edit {
-  color: var(--text-muted);
+  color: var(--text);
 }
 
 input[type="date"]:valid {
-  color: var(--text-muted);
+  color: var(--text);
 }
 
 input[type="date"]::-webkit-calendar-picker-indicator {

@@ -10,17 +10,17 @@ export const Schema = {
     status: "text"
   },
 
-  advance_salary_request: {
-    id: "int8",
-    created_at: "timestamptz",
-    month: "date",
-    total_salary: "numeric",
-    employee_id: "numeric",
-    advance_amount: "numeric",
-    remaining_salary: "numeric",
-    reason: "text",
-    status: "text"
-  },
+advance_salary_request: {
+  id: "int8",
+  created_at: "timestamptz",
+  month: "date",
+  total_salary: "numeric",
+  employee_id: "uuid",      // updated from numeric -> uuid (no FK constraint, stores Keycloak sub)
+  advance_amount: "numeric",
+  remaining_salary: "numeric",
+  reason: "text",
+  status: "text"
+},
 
   attendance: {
     id: "uuid",
@@ -101,6 +101,27 @@ announcements: {
   created_by: "text",
   created_at: "timestamptz",
   updated_at: "timestamptz"
-}
+},
+
+salary_structures: {
+  id: "uuid",
+  employee_id: "uuid",      // foreign key -> employees.id
+  gross_salary: "numeric",
+  pf_deduction: "numeric",
+  net_salary: "numeric",
+  effective_from: "date",
+  created_at: "timestamptz"
+},
+
+payslips: {
+  id: "uuid",
+  employee_id: "uuid",       // foreign key -> employees.id
+  month: "date",
+  gross_salary: "numeric",
+  pf_deduction: "numeric",
+  advance_deducted: "numeric",
+  net_pay: "numeric",
+  created_at: "timestamptz"
+},
 
 };

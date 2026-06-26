@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Eye, Pencil, Trash2, X } from "lucide-react";
+import { Eye, Pencil, Trash2, X, Users, UserCheck, UserX } from "lucide-react";
 import keycloak from "@/lib/keycloak";
 
 export default function EmployeesPage() {
@@ -249,38 +249,65 @@ export default function EmployeesPage() {
 
   return (
     <div className="pt-16 p-6 min-h-screen bg-[var(--background)] text-[var(--text)]">
-      <h1 className="text-2xl font-bold mb-6">Employees Dashboard</h1>
+
+      {/* Page Header */}
+      <div className="mb-8 bg-[var(--card)] border border-[var(--border)] p-5 rounded-xl shadow-sm flex items-center gap-4">
+        <div className="w-11 h-11 bg-indigo-900 rounded-xl flex items-center justify-center text-white shrink-0">
+          <Users size={22} />
+        </div>
+        <div>
+          <h1 className="text-xl font-semibold text-[var(--text)]">Employees Dashboard</h1>
+          <p className="text-xs text-[var(--text-muted)]">
+            Manage and view all employees
+          </p>
+        </div>
+      </div>
 
       {/* STATS */}
-      <div className="grid grid-cols-3 gap-6 mb-8">
-        <div className="bg-[var(--card)] border border-[var(--border)] p-6 rounded-xl">
-          <p className="text-sm text-[var(--text-muted)]">Total Employees</p>
-          <p className="text-3xl font-bold mt-2">{stats.total}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+        <div className="bg-[var(--card)] border border-[var(--border)] border-l-4 border-l-slate-600 rounded-xl shadow-sm p-6 flex items-start gap-4 hover:shadow-md transition-all duration-200">
+          <div className="w-11 h-11 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+            <Users size={20} className="text-slate-700 dark:text-slate-300" />
+          </div>
+          <div>
+            <p className="text-sm text-[var(--text-muted)]">Total Employees</p>
+            <p className="text-3xl font-bold mt-1 text-[var(--text)]">{stats.total}</p>
+          </div>
         </div>
-        <div className="bg-green-100 dark:bg-green-900 border border-green-300 dark:border-green-700 p-6 rounded-xl">
-          <p className="text-sm text-green-700 dark:text-green-300">Active Employees</p>
-          <p className="text-3xl font-bold mt-2 text-green-800 dark:text-green-200">{stats.active}</p>
+        <div className="bg-[var(--card)] border border-[var(--border)] border-l-4 border-l-emerald-600 rounded-xl shadow-sm p-6 flex items-start gap-4 hover:shadow-md transition-all duration-200">
+          <div className="w-11 h-11 rounded-xl bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center shrink-0">
+            <UserCheck size={20} className="text-emerald-700 dark:text-emerald-300" />
+          </div>
+          <div>
+            <p className="text-sm text-[var(--text-muted)]">Active Employees</p>
+            <p className="text-3xl font-bold mt-1 text-[var(--text)]">{stats.active}</p>
+          </div>
         </div>
-        <div className="bg-red-100 dark:bg-red-900 border border-red-300 dark:border-red-700 p-6 rounded-xl">
-          <p className="text-sm text-red-700 dark:text-red-300">Inactive Employees</p>
-          <p className="text-3xl font-bold mt-2 text-red-800 dark:text-red-200">{stats.inactive}</p>
+        <div className="bg-[var(--card)] border border-[var(--border)] border-l-4 border-l-red-600 rounded-xl shadow-sm p-6 flex items-start gap-4 hover:shadow-md transition-all duration-200">
+          <div className="w-11 h-11 rounded-xl bg-red-100 dark:bg-red-950 flex items-center justify-center shrink-0">
+            <UserX size={20} className="text-red-700 dark:text-red-300" />
+          </div>
+          <div>
+            <p className="text-sm text-[var(--text-muted)]">Inactive Employees</p>
+            <p className="text-3xl font-bold mt-1 text-[var(--text)]">{stats.inactive}</p>
+          </div>
         </div>
       </div>
 
       {/* TOOLBAR */}
-      <div className="flex flex-wrap gap-3 items-center mb-4 bg-[var(--card)] border border-[var(--border)] p-4 rounded-xl">
+      <div className="flex flex-wrap gap-3 items-center mb-4 bg-[var(--card)] border border-[var(--border)] p-4 rounded-xl shadow-sm">
         <input
           type="text"
           placeholder="Search employees..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 min-w-[200px] bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 outline-none text-sm"
+          className="flex-1 min-w-[200px] bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 outline-none text-sm text-[var(--text)]"
         />
 
         <select
           value={departmentFilter}
           onChange={(e) => setDepartmentFilter(e.target.value)}
-          className="bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 outline-none text-sm"
+          className="bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 outline-none text-sm text-[var(--text)]"
         >
           <option value="all">All Departments</option>
           {departments.map((d) => (
@@ -291,7 +318,7 @@ export default function EmployeesPage() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 outline-none text-sm"
+          className="bg-[var(--background)] border border-[var(--border)] rounded-lg px-3 py-2 outline-none text-sm text-[var(--text)]"
         >
           <option value="all">All Status</option>
           <option value="active">Active</option>
@@ -300,7 +327,7 @@ export default function EmployeesPage() {
 
         <button
           onClick={() => setShowAddForm(!showAddForm)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
+          className="bg-indigo-900 hover:bg-indigo-800 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
         >
           + Add Employee
         </button>
@@ -308,8 +335,8 @@ export default function EmployeesPage() {
 
       {/* ADD EMPLOYEE FORM */}
       {showAddForm && (
-        <div className="bg-[var(--card)] border border-[var(--border)] p-6 rounded-xl mb-6">
-          <h2 className="text-lg font-semibold mb-4">Add Employee</h2>
+        <div className="bg-[var(--card)] border border-[var(--border)] p-6 rounded-xl shadow-sm mb-6">
+          <h2 className="text-base font-semibold text-[var(--text)] mb-4">Add Employee</h2>
 
           <form onSubmit={handleAddSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <input
@@ -317,34 +344,34 @@ export default function EmployeesPage() {
               placeholder="Employee Name"
               value={formData.employee_name}
               onChange={(e) => setFormData({ ...formData, employee_name: e.target.value })}
-              className="bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 outline-none"
+              className="bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 outline-none text-[var(--text)]"
             />
             <input
               type="email"
               placeholder="Email"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 outline-none"
+              className="bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 outline-none text-[var(--text)]"
             />
             <input
               type="text"
               placeholder="Phone"
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              className="bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 outline-none"
+              className="bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 outline-none text-[var(--text)]"
             />
             <input
               type="text"
               placeholder="Employee ID"
               value={formData.employee_id}
               onChange={(e) => setFormData({ ...formData, employee_id: e.target.value })}
-              className="bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 outline-none"
+              className="bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 outline-none text-[var(--text)]"
             />
 
             <select
               value={formData.department}
               onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-              className="bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 outline-none"
+              className="bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 outline-none text-[var(--text)]"
             >
               <option value="">Select Department</option>
               {departments.map((d) => (
@@ -357,21 +384,20 @@ export default function EmployeesPage() {
               placeholder="Designation"
               value={formData.designation}
               onChange={(e) => setFormData({ ...formData, designation: e.target.value })}
-              className="bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 outline-none"
+              className="bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 outline-none text-[var(--text)]"
             />
 
             <input
               type="date"
               value={formData.date_of_joining}
               onChange={(e) => setFormData({ ...formData, date_of_joining: e.target.value })}
-              className="bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 outline-none"
-              style={{ colorScheme: "dark" }}
+              className="bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 outline-none text-[var(--text)]"
             />
 
             <select
               value={formData.status}
               onChange={(e) => setFormData({ ...formData, status: e.target.value === "true" })}
-              className="bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 outline-none"
+              className="bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 outline-none text-[var(--text)]"
             >
               <option value="true">Active</option>
               <option value="false">Inactive</option>
@@ -381,14 +407,14 @@ export default function EmployeesPage() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
+                className="bg-indigo-900 hover:bg-indigo-800 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
               >
                 {submitting ? "Saving..." : "Save"}
               </button>
               <button
                 type="button"
                 onClick={() => setShowAddForm(false)}
-                className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg"
+                className="px-4 py-2 border border-[var(--border)] rounded-lg text-sm text-[var(--text)] hover:bg-black/5 dark:hover:bg-white/5 transition"
               >
                 Cancel
               </button>
@@ -398,9 +424,12 @@ export default function EmployeesPage() {
       )}
 
       {/* EMPLOYEE TABLE */}
-      <h2 className="text-lg font-semibold mb-4">Employees Directory</h2>
+      <div className="mb-4">
+        <h2 className="text-base font-semibold text-[var(--text)]">Employees Directory</h2>
+        <p className="text-xs text-[var(--text-muted)]">Search, filter and manage employee records</p>
+      </div>
 
-      <div className="grid grid-cols-7 bg-blue-600 text-white px-6 py-3 rounded-xl text-sm font-semibold mb-3">
+      <div className="grid grid-cols-7 bg-indigo-900 text-white px-6 py-3 rounded-xl text-sm font-semibold mb-3 shadow-sm">
         <div>Name</div>
         <div>Email</div>
         <div>Phone</div>
@@ -416,19 +445,19 @@ export default function EmployeesPage() {
         {visibleEmployees.map((emp) => (
           <div
             key={emp.id}
-            className="grid grid-cols-7 bg-[var(--card)] border border-[var(--border)] px-6 py-4 rounded-xl items-center gap-2"
+            className="grid grid-cols-7 bg-[var(--card)] border border-[var(--border)] px-6 py-4 rounded-xl items-center gap-2 shadow-sm hover:shadow-md transition-all duration-200"
           >
-            <div>{emp.employee_name || "-"}</div>
-            <div className="truncate">{emp.email || "-"}</div>
-            <div>{emp.phone || "-"}</div>
+            <div className="font-medium text-[var(--text)]">{emp.employee_name || "-"}</div>
+            <div className="truncate text-[var(--text-muted)]">{emp.email || "-"}</div>
+            <div className="text-[var(--text-muted)]">{emp.phone || "-"}</div>
             <div>
               {emp.department && (
-                <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">
+                <span className="px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">
                   {emp.department}
                 </span>
               )}
             </div>
-            <div>{emp.designation || "-"}</div>
+            <div className="text-[var(--text-muted)]">{emp.designation || "-"}</div>
             <div>
               <span
                 className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -443,7 +472,7 @@ export default function EmployeesPage() {
             <div className="flex gap-2">
               <button
                 onClick={() => openView(emp)}
-                className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 p-1.5 rounded"
+                className="bg-[var(--background)] border border-[var(--border)] hover:border-indigo-400 text-[var(--text-muted)] hover:text-[var(--text)] p-1.5 rounded-lg transition"
                 title="View"
               >
                 <Eye size={16} />
@@ -453,14 +482,14 @@ export default function EmployeesPage() {
     openView(emp);
     startEditInModal(emp); // ✅ direct emp pass karo, setTimeout hatao
   }}
-  className="bg-blue-500 hover:bg-blue-600 text-white p-1.5 rounded"
+  className="bg-indigo-900 hover:bg-indigo-800 text-white p-1.5 rounded-lg transition"
   title="Edit"
 >
   <Pencil size={16} />
 </button>
               <button
                 onClick={() => handleDelete(emp.id)}
-                className="bg-red-500 hover:bg-red-600 text-white p-1.5 rounded"
+                className="bg-red-500 hover:bg-red-600 text-white p-1.5 rounded-lg transition"
                 title="Delete"
               >
                 <Trash2 size={16} />
@@ -473,23 +502,23 @@ export default function EmployeesPage() {
       {/* VIEW / EDIT MODAL */}
       {viewEmployee && (
         <div className="fixed inset-0 bg-black/30 dark:bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 relative shadow-2xl [&_input]:text-gray-900 [&_input]:dark:text-gray-100 [&_input]:bg-white [&_input]:dark:bg-gray-700 [&_textarea]:text-gray-900 [&_textarea]:dark:text-gray-100 [&_textarea]:bg-white [&_textarea]:dark:bg-gray-700 [&_select]:text-gray-900 [&_select]:dark:text-gray-100">
+          <div className="bg-[var(--card)] text-[var(--text)] border border-[var(--border)] rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 relative shadow-2xl [&_input]:text-[var(--text)] [&_input]:bg-[var(--background)] [&_input]:border-[var(--border)] [&_textarea]:text-[var(--text)] [&_textarea]:bg-[var(--background)] [&_select]:text-[var(--text)] [&_select]:bg-[var(--background)]">
 
             <button
               onClick={closeView}
-              className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-100"
+              className="absolute top-4 right-4 text-[var(--text-muted)] hover:text-[var(--text)]"
             >
               <X size={20} />
             </button>
 
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+              <h2 className="text-lg font-semibold text-[var(--text)]">
                 {isEditing ? "Edit Employee" : "Employee Details"}
               </h2>
               {!isEditing && (
                 <button
                   onClick={startEditInModal}
-                  className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-sm"
+                  className="flex items-center gap-1 bg-indigo-900 hover:bg-indigo-800 text-white px-3 py-1.5 rounded-lg text-sm transition"
                 >
                   <Pencil size={14} /> Edit
                 </button>
@@ -500,15 +529,15 @@ export default function EmployeesPage() {
               <>
                 {/* VIEW MODE HEADER */}
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="w-16 h-16 rounded-full bg-blue-600 text-white flex items-center justify-center text-xl font-bold">
+                  <div className="w-16 h-16 rounded-full bg-indigo-900 text-white flex items-center justify-center text-xl font-bold">
                     {viewEmployee.employee_name?.charAt(0) || "?"}
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100">{viewEmployee.employee_name}</h3>
-                    <p className="text-sm text-gray-900 dark:text-gray-100">{viewEmployee.designation}</p>
+                    <h3 className="text-xl font-bold text-[var(--text)]">{viewEmployee.employee_name}</h3>
+                    <p className="text-sm text-[var(--text-muted)]">{viewEmployee.designation}</p>
                     <div className="flex gap-2 mt-1">
                       {viewEmployee.department && (
-                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">
+                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">
                           {viewEmployee.department}
                         </span>
                       )}
@@ -525,7 +554,7 @@ export default function EmployeesPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 text-sm mb-4 text-gray-600 dark:text-gray-300">
+                <div className="grid grid-cols-2 gap-3 text-sm mb-4 text-[var(--text)]">
                   <p>📧 {viewEmployee.email || "-"}</p>
                   <p>📞 {viewEmployee.phone || "-"}</p>
                   <p>📅 Joined: {viewEmployee.date_of_joining || "-"}</p>
@@ -540,7 +569,7 @@ export default function EmployeesPage() {
                       onClick={() => setActiveTab(tab)}
                       className={`px-4 py-2 text-sm font-medium capitalize ${
                         activeTab === tab
-                          ? "border-b-2 border-blue-600 text-blue-600"
+                          ? "border-b-2 border-indigo-600 text-indigo-600"
                           : "text-[var(--text-muted)]"
                       }`}
                     >
@@ -553,15 +582,15 @@ export default function EmployeesPage() {
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
                       <p className="text-[var(--text-muted)]">Date of Birth</p>
-                      <p className="font-medium">{viewEmployee.date_of_birth || "Not added"}</p>
+                      <p className="font-medium text-[var(--text)]">{viewEmployee.date_of_birth || "Not added"}</p>
                     </div>
                     <div>
                       <p className="text-[var(--text-muted)]">Address</p>
-                      <p className="font-medium">{viewEmployee.address || "Not added"}</p>
+                      <p className="font-medium text-[var(--text)]">{viewEmployee.address || "Not added"}</p>
                     </div>
                     <div>
                       <p className="text-[var(--text-muted)]">Emergency Contact</p>
-                      <p className="font-medium">
+                      <p className="font-medium text-[var(--text)]">
                         {viewEmployee.emergency_contact_name
                           ? `${viewEmployee.emergency_contact_name}, ${viewEmployee.emergency_contact_phone || ""}`
                           : "Not added"}
@@ -569,7 +598,7 @@ export default function EmployeesPage() {
                     </div>
                     <div>
                       <p className="text-[var(--text-muted)]">Blood Group</p>
-                      <p className="font-medium">{viewEmployee.blood_group || "Not added"}</p>
+                      <p className="font-medium text-[var(--text)]">{viewEmployee.blood_group || "Not added"}</p>
                     </div>
                   </div>
                 )}
@@ -578,23 +607,23 @@ export default function EmployeesPage() {
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
                       <p className="text-[var(--text-muted)]">Department</p>
-                      <p className="font-medium">{viewEmployee.department || "Not added"}</p>
+                      <p className="font-medium text-[var(--text)]">{viewEmployee.department || "Not added"}</p>
                     </div>
                     <div>
                       <p className="text-[var(--text-muted)]">Designation</p>
-                      <p className="font-medium">{viewEmployee.designation || "Not added"}</p>
+                      <p className="font-medium text-[var(--text)]">{viewEmployee.designation || "Not added"}</p>
                     </div>
                     <div>
                       <p className="text-[var(--text-muted)]">Date of Joining</p>
-                      <p className="font-medium">{viewEmployee.date_of_joining || "Not added"}</p>
+                      <p className="font-medium text-[var(--text)]">{viewEmployee.date_of_joining || "Not added"}</p>
                     </div>
                     <div>
                       <p className="text-[var(--text-muted)]">Employment Type</p>
-                      <p className="font-medium">{viewEmployee.employment_type || "Not added"}</p>
+                      <p className="font-medium text-[var(--text)]">{viewEmployee.employment_type || "Not added"}</p>
                     </div>
                     <div>
                       <p className="text-[var(--text-muted)]">Status</p>
-                      <p className="font-medium">{viewEmployee.status ? "Active" : "Inactive"}</p>
+                      <p className="font-medium text-[var(--text)]">{viewEmployee.status ? "Active" : "Inactive"}</p>
                     </div>
                   </div>
                 )}
@@ -602,10 +631,10 @@ export default function EmployeesPage() {
                 {activeTab === "documents" && (
                   <div className="text-sm">
                     <p className="text-[var(--text-muted)] mb-1">Skills</p>
-                    <p className="font-medium mb-4">{viewEmployee.skills || "Not added"}</p>
+                    <p className="font-medium text-[var(--text)] mb-4">{viewEmployee.skills || "Not added"}</p>
 
                     <p className="text-[var(--text-muted)] mb-1">Documents Notes</p>
-                    <p className="font-medium">{viewEmployee.documents_notes || "Not added"}</p>
+                    <p className="font-medium text-[var(--text)]">{viewEmployee.documents_notes || "Not added"}</p>
                   </div>
                 )}
               </>
@@ -619,7 +648,7 @@ export default function EmployeesPage() {
                       onClick={() => setActiveTab(tab)}
                       className={`px-4 py-2 text-sm font-medium capitalize ${
                         activeTab === tab
-                          ? "border-b-2 border-blue-600 text-blue-600"
+                          ? "border-b-2 border-indigo-600 text-indigo-600"
                           : "text-[var(--text-muted)]"
                       }`}
                     >
@@ -634,25 +663,25 @@ export default function EmployeesPage() {
                     placeholder="Employee Name"
                     value={editData.employee_name}
                     onChange={(e) => setEditData({ ...editData, employee_name: e.target.value })}
-                    className="bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 text-sm outline-none"
+                    className="bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 text-sm outline-none text-[var(--text)]"
                   />
                   <input
                     placeholder="Email"
                     value={editData.email}
                     onChange={(e) => setEditData({ ...editData, email: e.target.value })}
-                    className="bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 text-sm outline-none"
+                    className="bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 text-sm outline-none text-[var(--text)]"
                   />
                   <input
                     placeholder="Phone"
                     value={editData.phone}
                     onChange={(e) => setEditData({ ...editData, phone: e.target.value })}
-                    className="bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 text-sm outline-none"
+                    className="bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 text-sm outline-none text-[var(--text)]"
                   />
                   <input
                     placeholder="Employee ID"
                     value={editData.employee_id}
                     onChange={(e) => setEditData({ ...editData, employee_id: e.target.value })}
-                    className="bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 text-sm outline-none"
+                    className="bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 text-sm outline-none text-[var(--text)]"
                   />
                 </div>
 
@@ -664,8 +693,7 @@ export default function EmployeesPage() {
                         type="date"
                         value={editData.date_of_birth}
                         onChange={(e) => setEditData({ ...editData, date_of_birth: e.target.value })}
-                        className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 text-sm outline-none"
-                        style={{ colorScheme: "dark" }}
+                        className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 text-sm outline-none text-[var(--text)]"
                       />
                     </div>
                     <div>
@@ -674,7 +702,7 @@ export default function EmployeesPage() {
                         placeholder="e.g. O+"
                         value={editData.blood_group}
                         onChange={(e) => setEditData({ ...editData, blood_group: e.target.value })}
-                        className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 text-sm outline-none"
+                        className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 text-sm outline-none text-[var(--text)]"
                       />
                     </div>
                     <div className="col-span-2">
@@ -683,7 +711,7 @@ export default function EmployeesPage() {
                         placeholder="Full address"
                         value={editData.address}
                         onChange={(e) => setEditData({ ...editData, address: e.target.value })}
-                        className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 text-sm outline-none"
+                        className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 text-sm outline-none text-[var(--text)]"
                       />
                     </div>
                     <div>
@@ -692,7 +720,7 @@ export default function EmployeesPage() {
                         placeholder="Contact person name"
                         value={editData.emergency_contact_name}
                         onChange={(e) => setEditData({ ...editData, emergency_contact_name: e.target.value })}
-                        className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 text-sm outline-none"
+                        className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 text-sm outline-none text-[var(--text)]"
                       />
                     </div>
                     <div>
@@ -701,7 +729,7 @@ export default function EmployeesPage() {
                         placeholder="Contact phone"
                         value={editData.emergency_contact_phone}
                         onChange={(e) => setEditData({ ...editData, emergency_contact_phone: e.target.value })}
-                        className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 text-sm outline-none"
+                        className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 text-sm outline-none text-[var(--text)]"
                       />
                     </div>
                   </div>
@@ -714,7 +742,7 @@ export default function EmployeesPage() {
                       <select
                         value={editData.department}
                         onChange={(e) => setEditData({ ...editData, department: e.target.value })}
-                        className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 text-sm outline-none"
+                        className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 text-sm outline-none text-[var(--text)]"
                       >
                         <option value="">Select</option>
                         {departments.map((d) => (
@@ -727,7 +755,7 @@ export default function EmployeesPage() {
                       <input
                         value={editData.designation}
                         onChange={(e) => setEditData({ ...editData, designation: e.target.value })}
-                        className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 text-sm outline-none"
+                        className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 text-sm outline-none text-[var(--text)]"
                       />
                     </div>
                     <div>
@@ -736,8 +764,7 @@ export default function EmployeesPage() {
                         type="date"
                         value={editData.date_of_joining}
                         onChange={(e) => setEditData({ ...editData, date_of_joining: e.target.value })}
-                        className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 text-sm outline-none"
-                        style={{ colorScheme: "dark" }}
+                        className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 text-sm outline-none text-[var(--text)]"
                       />
                     </div>
                     <div>
@@ -746,7 +773,7 @@ export default function EmployeesPage() {
                         placeholder="Full-time / Contract / Intern"
                         value={editData.employment_type}
                         onChange={(e) => setEditData({ ...editData, employment_type: e.target.value })}
-                        className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 text-sm outline-none"
+                        className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 text-sm outline-none text-[var(--text)]"
                       />
                     </div>
                     <div>
@@ -754,7 +781,7 @@ export default function EmployeesPage() {
                       <select
                         value={editData.status}
                         onChange={(e) => setEditData({ ...editData, status: e.target.value === "true" })}
-                        className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 text-sm outline-none"
+                        className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 text-sm outline-none text-[var(--text)]"
                       >
                         <option value="true">Active</option>
                         <option value="false">Inactive</option>
@@ -771,7 +798,7 @@ export default function EmployeesPage() {
                         placeholder="e.g. React, Node.js, Figma"
                         value={editData.skills}
                         onChange={(e) => setEditData({ ...editData, skills: e.target.value })}
-                        className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 text-sm outline-none"
+                        className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 text-sm outline-none text-[var(--text)]"
                       />
                     </div>
                     <div>
@@ -781,7 +808,7 @@ export default function EmployeesPage() {
                         placeholder="Notes about submitted documents"
                         value={editData.documents_notes}
                         onChange={(e) => setEditData({ ...editData, documents_notes: e.target.value })}
-                        className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 text-sm outline-none"
+                        className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 text-sm outline-none text-[var(--text)]"
                       />
                     </div>
                   </div>
@@ -790,13 +817,13 @@ export default function EmployeesPage() {
                 <div className="flex gap-3 mt-5">
                   <button
                     onClick={saveEditInModal}
-                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm"
+                    className="bg-indigo-900 hover:bg-indigo-800 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
                   >
                     Save Changes
                   </button>
                   <button
                     onClick={cancelEditInModal}
-                    className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm"
+                    className="px-4 py-2 border border-[var(--border)] rounded-lg text-sm text-[var(--text)] hover:bg-black/5 dark:hover:bg-white/5 transition"
                   >
                     Cancel
                   </button>

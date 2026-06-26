@@ -100,12 +100,12 @@ export default function Header({ collapsed, setCollapsed }) {
   };
 
   return (
-    <div className="flex justify-between bg-[var(--background)] text-[var(--text)] border border-[var(--border)] px-5 h-16 items-center transition-all duration-300">
+    <div className="flex justify-between bg-[var(--shell)] text-[var(--shell-text)] border-b border-[var(--shell-border)] px-5 h-16 items-center transition-all duration-300">
 
       {/* LEFT */}
       <div className="flex items-center gap-3">
 
-        <div className="w-7 h-7 bg-blue-100 dark:bg-gray-800 rounded-full flex items-center justify-center text-blue-600 dark:text-gray-300">
+        <div className="w-7 h-7 bg-[var(--shell-icon-bg)] rounded-full flex items-center justify-center text-[var(--shell-text)] hover:bg-[var(--shell-hover)] transition">
           <PanelLeftCloseIcon
             size={16}
             onClick={() => setCollapsed(!collapsed)}
@@ -114,11 +114,11 @@ export default function Header({ collapsed, setCollapsed }) {
         </div>
 
         <div>
-          <h2 className="text-lg text-[var(--text)]">
+          <h2 className="text-lg font-semibold text-[var(--shell-text)]">
             VHC (HR)
           </h2>
 
-          <p className="text-xs text-[var(--text)]">
+          <p className="text-xs text-[var(--shell-text-muted)]">
             Dashboard
           </p>
         </div>
@@ -128,26 +128,26 @@ export default function Header({ collapsed, setCollapsed }) {
       <div className="flex items-center gap-6">
 
         {/* DARK MODE */}
-        <div className="w-7 h-7 bg-blue-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+        <div className="w-7 h-7 bg-[var(--shell-icon-bg)] rounded-full flex items-center justify-center hover:bg-[var(--shell-hover)] transition">
           {dark ? (
             <Sun
               size={16}
               onClick={toggleDarkMode}
-              className="cursor-pointer text-gray-700 dark:text-gray-300"
+              className="cursor-pointer text-[var(--shell-text)]"
             />
           ) : (
             <Moon
               size={16}
               onClick={toggleDarkMode}
-              className="cursor-pointer text-gray-700 dark:text-gray-300"
+              className="cursor-pointer text-[var(--shell-text)]"
             />
           )}
         </div>
 
         {/* NOTIFICATION */}
         <Link href="/notifications">
-          <div className="relative w-7 h-7 bg-blue-100 dark:bg-gray-800 rounded-full flex items-center justify-center cursor-pointer">
-            <Bell size={16} className="text-gray-700 dark:text-gray-300" />
+          <div className="relative w-7 h-7 bg-[var(--shell-icon-bg)] rounded-full flex items-center justify-center cursor-pointer hover:bg-[var(--shell-hover)] transition">
+            <Bell size={16} className="text-[var(--shell-text)]" />
             {notifCount > 0 && (
               <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] px-1 rounded-full min-w-[16px] text-center">
                 {notifCount > 99 ? "99+" : notifCount}
@@ -163,16 +163,16 @@ export default function Header({ collapsed, setCollapsed }) {
             onClick={() => setOpen(!open)}
             className="flex items-center cursor-pointer"
           >
-            <div className="w-7 h-7 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm">
+            <div className="w-7 h-7 bg-indigo-500 text-white rounded-full flex items-center justify-center text-sm font-medium">
               {user.initials}
             </div>
 
-            <div className="pl-1 hidden sm:block">
-              <h3 className="text-sm text-[var(--text)]">
+            <div className="pl-2 hidden sm:block">
+              <h3 className="text-sm font-medium text-[var(--shell-text)]">
                 {user.name}
               </h3>
 
-              <p className="text-xs text-[var(--text-muted)]">
+              <p className="text-xs text-[var(--shell-text-muted)]">
                 {user.role}
               </p>
             </div>
@@ -180,11 +180,11 @@ export default function Header({ collapsed, setCollapsed }) {
 
           {/* DROPDOWN */}
           {open && (
-            <div className="absolute right-0 mt-2 w-32 bg-[var(--background)] border border-[var(--border)] shadow-md rounded-md z-50">
+            <div className="absolute right-0 mt-2 w-36 bg-[var(--card)] border border-[var(--border)] shadow-lg rounded-lg z-50 text-[var(--text)]">
 
               <button
                 onClick={() => router.push("/profile")}
-                className="w-full text-left px-3 py-2 text-sm hover:bg-black/5 dark:hover:bg-white/5"
+                className="w-full text-left px-3 py-2 text-sm text-[var(--text)] hover:bg-black/5 dark:hover:bg-white/5"
               >
                 Profile
               </button>
@@ -193,7 +193,7 @@ export default function Header({ collapsed, setCollapsed }) {
               {keycloak?.tokenParsed?.preferred_username === "dinesh" && (
                 <button
                   onClick={() => router.push("/settings")}
-                  className="w-full text-left px-3 py-2 text-sm hover:bg-black/5 dark:hover:bg-white/5"
+                  className="w-full text-left px-3 py-2 text-sm text-[var(--text)] hover:bg-black/5 dark:hover:bg-white/5"
                 >
                   Settings
                 </button>
