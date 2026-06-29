@@ -18,9 +18,16 @@ const verifyUser = (request) => {
 };
 
 // 🧑‍💼 ROLE CHECK (HR / ADMIN)
-const isAllowed = (decoded) => {
-  return decoded?.realm_access?.roles?.includes("hr") ||
-         decoded?.realm_access?.roles?.includes("admin");
+// Role now comes from Supabase (employees.role), not from Keycloak.
+const isAllowed = async (decoded) => {
+  const { data: empData } = await supabase
+    .from("employees")
+    .select("role")
+    .eq("keycloak_id", decoded.sub)
+    .single();
+
+  const role = empData?.role || "user";
+  return role === "hr" || role === "admin";
 };
 
 // GET — list employees, with optional ?department= and ?status= filters
@@ -28,7 +35,7 @@ export async function GET(request) {
   try {
     const decoded = verifyUser(request);
 
-    if (!isAllowed(decoded)) {
+    if (!(await isAllowed(decoded))) {
       return NextResponse.json(
         { error: "Forbidden" },
         { status: 403 }

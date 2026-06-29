@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import jwt from "jsonwebtoken";
 
-function verifyToken(request) {
+async function verifyToken(request) {
   const authHeader = request.headers.get("authorization");
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -17,15 +17,19 @@ function verifyToken(request) {
     { algorithms: ["RS256"] }
   );
 
-  const roles = decoded.realm_access?.roles || [];
-  const role = roles.includes("admin")
-    ? "admin"
-    : roles.includes("hr")
-    ? "hr"
-    : "user";
+  const userId = decoded.sub;
+
+  // Role now comes from Supabase (employees.role), not from Keycloak.
+  const { data: empData } = await supabase
+    .from("employees")
+    .select("role")
+    .eq("keycloak_id", userId)
+    .single();
+
+  const role = empData?.role || "user";
 
   return {
-    userId: decoded.sub,
+    userId,
     name: decoded.name || decoded.preferred_username || "User",
     role,
   };
@@ -33,27 +37,29 @@ function verifyToken(request) {
 
 export async function GET(request) {
   try {
-    const user = verifyToken(request);
+    const user = await verifyToken(request);
 
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // hr/admin see notifications where role = 'hr' or 'admin' or 'all'
-    // regular users see role = 'user' or 'all'
-    // (employee_id-specific targeting can be added later once the id mapping is confirmed)
-    let roleFilter;
-    if (user.role === "admin" || user.role === "hr") {
-      roleFilter = `role.eq.hr,role.eq.admin,role.eq.all`;
-    } else {
-      roleFilter = `role.eq.user,role.eq.all`;
-    }
-
-    const { data, error } = await supabase
+    // hr/admin: see hr/admin/all notifications
+    // manager: see notifications specifically addressed to them (employee_id match) or role=manager/all
+    // regular users: see role=user or all
+    let query = supabase
       .from("notifications")
       .select("*")
-      .or(roleFilter)
       .order("created_at", { ascending: false });
+
+    if (user.role === "admin" || user.role === "hr") {
+      query = query.or(`role.eq.hr,role.eq.admin,role.eq.all`);
+    } else if (user.role === "manager") {
+      query = query.or(`role.eq.manager,role.eq.all,employee_id.eq.${user.userId}`);
+    } else {
+      query = query.or(`role.eq.user,role.eq.all,employee_id.eq.${user.userId}`);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
@@ -111,6 +117,7 @@ export async function POST(request) {
     );
   }
 }
+
 export async function PATCH(request) {
   try {
     const user = verifyToken(request);

@@ -50,6 +50,7 @@ export default function Sidebar({ collapsed }) {
           />
         )}
 
+
         {/* Payroll page visible only for HR */}
         {isHR && (
           <SidebarItem
@@ -61,19 +62,18 @@ export default function Sidebar({ collapsed }) {
           />
         )}
 
-        {/* Leave page visible only for User
-            (role-based check + temporary vrish fallback since his
-            Keycloak role is currently set incorrectly to admin) */}
-        {(keycloak?.tokenParsed?.realm_access?.roles?.includes("user") ||
-          keycloak?.tokenParsed?.preferred_username === "vrish") && (
-          <SidebarItem
-            icon={<CalendarDays size={18} />}
-            text="leave"
-            href="/leave"
-            active={pathname === "/leave"}
-            collapsed={collapsed}
-          />
-        )}
+{(keycloak?.tokenParsed?.realm_access?.roles?.includes("user") ||
+  keycloak?.tokenParsed?.realm_access?.roles?.includes("manager") ||
+  keycloak?.tokenParsed?.preferred_username === "vrish" ||
+  keycloak?.tokenParsed?.preferred_username === "lalit-himanshu") && (
+  <SidebarItem
+    icon={<CalendarDays size={18} />}
+    text="leave"
+    href="/leave"
+    active={pathname === "/leave"}
+    collapsed={collapsed}
+  />
+)}
 
         <SidebarItem
           icon={<ClipboardCheck size={18} />}

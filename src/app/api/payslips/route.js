@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import jwt from "jsonwebtoken";
 
-function verifyToken(request) {
+async function verifyToken(request) {
   const authHeader = request.headers.get("authorization");
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -17,22 +17,19 @@ function verifyToken(request) {
     { algorithms: ["RS256"] }
   );
 
-  const roles = decoded.realm_access?.roles || [];
+  const userId = decoded.sub;
 
-  const username = decoded.preferred_username;
-  let role;
-  if (username === "vrish") {
-    role = "user";
-  } else {
-    role = roles.includes("admin")
-      ? "admin"
-      : roles.includes("hr")
-      ? "hr"
-      : "user";
-  }
+  // Role now comes from Supabase (employees.role), not from Keycloak.
+  const { data: empData } = await supabase
+    .from("employees")
+    .select("role")
+    .eq("keycloak_id", userId)
+    .single();
+
+  const role = empData?.role || "user";
 
   return {
-    userId: decoded.sub,
+    userId,
     role,
   };
 }
@@ -40,7 +37,7 @@ function verifyToken(request) {
 // GET — HR/admin see all generated payslips
 export async function GET(request) {
   try {
-    const user = verifyToken(request);
+    const user = await verifyToken(request);
 
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

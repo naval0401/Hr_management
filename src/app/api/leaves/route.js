@@ -25,19 +25,15 @@ export async function POST(request) {
       decoded.preferred_username ||
       "User";
 
-   const roles = decoded.realm_access?.roles || [];
-const username = decoded.preferred_username;
+    // Role now comes from Supabase (employees.role), not from Keycloak.
+// Keycloak is only used for authentication; authorization is decided by Supabase.
+const { data: empData } = await supabase
+  .from("employees")
+  .select("role")
+  .eq("keycloak_id", userId)
+  .single();
 
-let role;
-if (username === "vrish") {
-  role = "user"; // TEMPORARY fix, no Keycloak acess right now
-} else {
-  role = roles.includes("admin")
-    ? "admin"
-    : roles.includes("hr")
-    ? "hr"
-    : "user";
-}
+const role = empData?.role || "user";
 
     const body = await request.json();
     const { fromDate, toDate, reason } = body;
@@ -53,6 +49,8 @@ if (username === "vrish") {
           to_date: toDate,
           reason,
           status: "pending",
+          manager_status: "pending",
+          hr_status: "pending",
         },
       ])
       .select();
@@ -64,24 +62,74 @@ if (username === "vrish") {
       );
     }
 
-    // 🔔 Notify HR: matches your real notifications schema
-    // (id, employee_id, role, type, title, message, is_read, created_at)
-    // employee_id left null for now since it targets a ROLE (hr), not one person.
-    const { error: notifyError } = await supabase
-      .from("notifications")
-      .insert([
-        {
-          employee_id: null,
-          role: "hr",
-          type: "leave",
-          title: "New Leave Request",
-          message: `${name} applied for leave — ${reason}`,
-          is_read: false,
-        },
-      ]);
+   // 🔔 Find this employee's manager via reporting_manager,
+    // and notify that specific manager (not a generic "hr" role notification).
+    console.log("DEBUG: Looking up employee row for userId:", userId);
 
-    if (notifyError) {
-      console.error("Failed to create notification:", notifyError.message);
+    const { data: employeeRow, error: empError } = await supabase
+      .from("employees")
+      .select("reporting_manager")
+      .eq("keycloak_id", userId)
+      .single();
+
+    console.log("DEBUG: employeeRow =", employeeRow, "empError =", empError);
+
+    if (!empError && employeeRow?.reporting_manager) {
+      console.log("DEBUG: Found reporting_manager =", employeeRow.reporting_manager);
+
+      const { data: managerRow, error: managerError } = await supabase
+        .from("employees")
+        .select("keycloak_id")
+        .eq("id", employeeRow.reporting_manager)
+        .single();
+
+      console.log("DEBUG: managerRow =", managerRow, "managerError =", managerError);
+
+      if (managerRow?.keycloak_id) {
+        console.log("DEBUG: Attempting to insert notification for manager keycloak_id =", managerRow.keycloak_id);
+
+        const { data: notifData, error: notifyError } = await supabase
+          .from("notifications")
+          .insert([
+            {
+              employee_id: managerRow.keycloak_id,
+              role: "manager",
+              type: "leave",
+              title: "New Leave Request — Awaiting Your Approval",
+              message: `${name} applied for leave — ${reason}`,
+              is_read: false,
+            },
+          ])
+          .select();
+
+        console.log("DEBUG: notification insert result =", notifData, "notifyError =", notifyError);
+
+        if (notifyError) {
+          console.error("Failed to create manager notification:", notifyError.message);
+        }
+      } else {
+        console.log("DEBUG: managerRow.keycloak_id was missing/null, no notification sent");
+      }
+    } else {
+      console.log("DEBUG: No reporting_manager found, falling back to HR notification");
+
+      // Fallback: if no manager is set up for this employee,
+      // notify HR directly so the request doesn't go unnoticed.
+      const { error: fallbackError } = await supabase
+        .from("notifications")
+        .insert([
+          {
+            role: "hr",
+            type: "leave",
+            title: "New Leave Request",
+            message: `${name} applied for leave — ${reason} (no manager assigned)`,
+            is_read: false,
+          },
+        ]);
+
+      if (fallbackError) {
+        console.error("Failed to create fallback notification:", fallbackError.message);
+      }
     }
 
     return NextResponse.json(data, { status: 200 });

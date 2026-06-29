@@ -18,12 +18,14 @@ export default function Dashboard() {
     }
 
     const roles = keycloak.tokenParsed?.realm_access?.roles || [];
+    console.log("Roles:", roles); // yeh add karo
+    console.log("Authenticated:", keycloak.authenticated); // yeh bhi
 
-    if (roles.includes("hr")) {
-      setRole("hr");
-    } else {
-      setRole("user");
-    }
+    if (roles.includes("hr") || roles.includes("admin")) {
+  setRole("hr");
+} else {
+  setRole("user"); // manager + regular user dono yahan — correct
+}
 
   }, []);
 
