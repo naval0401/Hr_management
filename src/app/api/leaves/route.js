@@ -1,39 +1,10 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import jwt from "jsonwebtoken";
+import { verifyUser } from "@/lib/auth";
 
 export async function POST(request) {
   try {
-    const authHeader = request.headers.get("authorization");
-
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const token = authHeader.split(" ")[1];
-
-    const decoded = jwt.verify(
-      token,
-      process.env.KEYCLOAK_PUBLIC_KEY,
-      { algorithms: ["RS256"] }
-    );
-
-    const userId = decoded.sub;
-
-    const name =
-      decoded.name ||
-      decoded.preferred_username ||
-      "User";
-
-    // Role now comes from Supabase (employees.role), not from Keycloak.
-// Keycloak is only used for authentication; authorization is decided by Supabase.
-const { data: empData } = await supabase
-  .from("employees")
-  .select("role")
-  .eq("keycloak_id", userId)
-  .single();
-
-const role = empData?.role || "user";
+    const { keycloak_id: userId, role, employee_name: name } = await verifyUser(request);
 
     const body = await request.json();
     const { fromDate, toDate, reason } = body;
@@ -113,8 +84,18 @@ const role = empData?.role || "user";
     } else {
       console.log("DEBUG: No reporting_manager found, falling back to HR notification");
 
-      // Fallback: if no manager is set up for this employee,
-      // notify HR directly so the request doesn't go unnoticed.
+      // Fallback: if no manager is set up for this employee (e.g. the
+      // manager applying for their own leave), auto-approve the manager
+      // step so it shows up directly in HR's pending list, and notify HR.
+      const { error: autoApproveError } = await supabase
+        .from("leaves")
+        .update({ manager_status: "Approved" })
+        .eq("id", data[0].id);
+
+      if (autoApproveError) {
+        console.error("Failed to auto-approve manager step:", autoApproveError.message);
+      }
+
       const { error: fallbackError } = await supabase
         .from("notifications")
         .insert([

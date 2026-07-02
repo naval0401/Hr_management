@@ -10,7 +10,7 @@ export const metadata = { // Define metadata for SEO (Search Engine Optimization
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className="antialiased">
+      <body className="antialiased" suppressHydrationWarning>
         <Providers>
           <Layout>
             {children}

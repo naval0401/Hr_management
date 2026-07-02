@@ -1,47 +1,11 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import jwt from "jsonwebtoken";
-
-async function verifyToken(request) {
-  const authHeader = request.headers.get("authorization");
-
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return null;
-  }
-
-  const token = authHeader.split(" ")[1];
-
-  const decoded = jwt.verify(
-    token,
-    process.env.KEYCLOAK_PUBLIC_KEY,
-    { algorithms: ["RS256"] }
-  );
-
-  const userId = decoded.sub;
-
-  // Role now comes from Supabase (employees.role), not from Keycloak.
-  const { data: empData } = await supabase
-    .from("employees")
-    .select("role")
-    .eq("keycloak_id", userId)
-    .single();
-
-  const role = empData?.role || "user";
-
-  return {
-    userId,
-    role,
-  };
-}
+import { verifyUser } from "@/lib/auth";
 
 // GET — anyone logged in can view the list of departments
 export async function GET(request) {
   try {
-    const user = await verifyToken(request);
-
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    await verifyUser(request);
 
     const { data, error } = await supabase
       .from("departments")
@@ -65,13 +29,9 @@ export async function GET(request) {
 // POST — only HR/admin can create a new department
 export async function POST(request) {
   try {
-    const user = verifyToken(request);
+    const { role } = await verifyUser(request);
 
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    if (user.role !== "hr" && user.role !== "admin") {
+    if (role !== "hr" && role !== "admin") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -107,13 +67,9 @@ export async function POST(request) {
 // PUT — only HR/admin can edit an existing department
 export async function PUT(request) {
   try {
-    const user = verifyToken(request);
+    const { role } = await verifyUser(request);
 
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    if (user.role !== "hr" && user.role !== "admin") {
+    if (role !== "hr" && role !== "admin") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -150,13 +106,9 @@ export async function PUT(request) {
 // DELETE — only HR/admin can delete a department
 export async function DELETE(request) {
   try {
-    const user = verifyToken(request);
+    const { role } = await verifyUser(request);
 
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    if (user.role !== "hr" && user.role !== "admin") {
+    if (role !== "hr" && role !== "admin") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

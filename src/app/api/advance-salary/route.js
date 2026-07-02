@@ -1,58 +1,19 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import jwt from "jsonwebtoken";
-
-async function verifyToken(request) {
-  const authHeader = request.headers.get("authorization");
-
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return null;
-  }
-
-  const token = authHeader.split(" ")[1];
-
-  const decoded = jwt.verify(
-    token,
-    process.env.KEYCLOAK_PUBLIC_KEY,
-    { algorithms: ["RS256"] }
-  );
-
-  const userId = decoded.sub;
-
-  // Role now comes from Supabase (employees.role), not from Keycloak.
-  const { data: empData } = await supabase
-    .from("employees")
-    .select("role")
-    .eq("keycloak_id", userId)
-    .single();
-
-  const role = empData?.role || "user";
-
-  return {
-    userId,
-    name: decoded.name || decoded.preferred_username || "User",
-    role,
-  };
-}
+import { verifyUser } from "@/lib/auth";
 
 // GET — employees see their own requests, HR/admin see all.
-// Looks up employee name/department via keycloak_id, since
-// employee_id here stores the Keycloak sub, not employees.id.
 export async function GET(request) {
   try {
-    const user = await verifyToken(request);
-
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const { role, keycloak_id: userId } = await verifyUser(request);
 
     let query = supabase
       .from("advance_salary_request")
       .select("*")
       .order("created_at", { ascending: false });
 
-    if (user.role !== "hr" && user.role !== "admin") {
-      query = query.eq("employee_id", user.userId);
+    if (role !== "hr" && role !== "admin") {
+      query = query.eq("employee_id", userId);
     }
 
     const { data: requests, error } = await query;
@@ -61,7 +22,6 @@ export async function GET(request) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // Look up employee names/departments via keycloak_id for all requests
     const keycloakIds = [...new Set(requests.map((r) => r.employee_id).filter(Boolean))];
 
     let employeeMap = {};
@@ -98,11 +58,7 @@ export async function GET(request) {
 // POST — employee submits a new advance salary request
 export async function POST(request) {
   try {
-    const user = verifyToken(request);
-
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const { keycloak_id: userId, employee_name } = await verifyUser(request);
 
     const body = await request.json();
     const { month, total_salary, advance_amount, reason } = body;
@@ -114,15 +70,13 @@ export async function POST(request) {
       );
     }
 
-    const remaining_salary = total_salary
-      ? total_salary - advance_amount
-      : null;
+    const remaining_salary = total_salary ? total_salary - advance_amount : null;
 
     const { data, error } = await supabase
       .from("advance_salary_request")
       .insert([
         {
-          employee_id: user.userId,
+          employee_id: userId,
           month,
           total_salary,
           advance_amount,
@@ -144,7 +98,7 @@ export async function POST(request) {
           role: "hr",
           type: "advance_salary",
           title: "New Advance Salary Request",
-          message: `${user.name} requested an advance of ₹${advance_amount} for ${month}.`,
+          message: `${employee_name} requested an advance of ₹${advance_amount} for ${month}.`,
           is_read: false,
         },
       ]);
@@ -166,13 +120,9 @@ export async function POST(request) {
 // PUT — HR/admin approves or rejects a request
 export async function PUT(request) {
   try {
-    const user = verifyToken(request);
+    const { role } = await verifyUser(request);
 
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    if (user.role !== "hr" && user.role !== "admin") {
+    if (role !== "hr" && role !== "admin") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

@@ -1,43 +1,10 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import jwt from "jsonwebtoken";
-
-function verifyToken(request) {
-  const authHeader = request.headers.get("authorization");
-
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return null;
-  }
-
-  const token = authHeader.split(" ")[1];
-
-  const decoded = jwt.verify(
-    token,
-    process.env.KEYCLOAK_PUBLIC_KEY,
-    { algorithms: ["RS256"] }
-  );
-
-  const roles = decoded.realm_access?.roles || [];
-  const role = roles.includes("admin")
-    ? "admin"
-    : roles.includes("hr")
-    ? "hr"
-    : "user";
-
-  return {
-    userId: decoded.sub,
-    name: decoded.name || decoded.preferred_username || "User",
-    role,
-  };
-}
+import { verifyUser } from "@/lib/auth";
 
 export async function GET(request) {
   try {
-    const user = verifyToken(request);
-
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const { role } = await verifyUser(request);
 
     let query = supabase
       .from("announcements")
@@ -45,7 +12,7 @@ export async function GET(request) {
       .order("is_pinned", { ascending: false })
       .order("created_at", { ascending: false });
 
-    if (user.role !== "hr" && user.role !== "admin") {
+    if (role !== "hr" && role !== "admin") {
       query = query.in("target_audience", ["all", "user"]);
     }
 
@@ -66,19 +33,14 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const user = verifyToken(request);
+    const { role, employee_name } = await verifyUser(request);
 
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    if (user.role !== "hr" && user.role !== "admin") {
+    if (role !== "hr" && role !== "admin") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const body = await request.json();
-    const { title, message, category, emoji, target_audience, event_date, is_pinned } =
-      body;
+    const { title, message, category, emoji, target_audience, event_date, is_pinned } = body;
 
     if (!title?.trim() || !message?.trim()) {
       return NextResponse.json(
@@ -98,7 +60,7 @@ export async function POST(request) {
           target_audience: target_audience || "all",
           event_date: event_date || null,
           is_pinned: Boolean(is_pinned),
-          created_by: user.name,
+          created_by: employee_name,
         },
       ])
       .select();
@@ -118,19 +80,14 @@ export async function POST(request) {
 
 export async function PUT(request) {
   try {
-    const user = verifyToken(request);
+    const { role } = await verifyUser(request);
 
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    if (user.role !== "hr" && user.role !== "admin") {
+    if (role !== "hr" && role !== "admin") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const body = await request.json();
-    const { id, title, message, category, emoji, target_audience, event_date, is_pinned } =
-      body;
+    const { id, title, message, category, emoji, target_audience, event_date, is_pinned } = body;
 
     if (!id) {
       return NextResponse.json({ error: "Missing id" }, { status: 400 });
@@ -166,13 +123,9 @@ export async function PUT(request) {
 
 export async function DELETE(request) {
   try {
-    const user = verifyToken(request);
+    const { role } = await verifyUser(request);
 
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    if (user.role !== "hr" && user.role !== "admin") {
+    if (role !== "hr" && role !== "admin") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

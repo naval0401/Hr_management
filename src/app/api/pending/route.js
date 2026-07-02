@@ -1,36 +1,10 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import jwt from "jsonwebtoken";
-
-async function verifyUser(decoded) {
-  const userId = decoded.sub;
-
-  // Role now comes from Supabase (employees.role), not from Keycloak.
-  const { data: empData } = await supabase
-    .from("employees")
-    .select("role")
-    .eq("keycloak_id", userId)
-    .single();
-
-  const role = empData?.role || "user";
-
-  return { userId, role };
-}
+import { verifyUser } from "@/lib/auth";
 
 export async function GET(request) {
   try {
-    const authHeader = request.headers.get("authorization");
-
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const token = authHeader.split(" ")[1];
-    const decoded = jwt.verify(token, process.env.KEYCLOAK_PUBLIC_KEY, {
-      algorithms: ["RS256"],
-    });
-
-    const { userId, role } = await verifyUser(decoded);
+    const { keycloak_id, role } = await verifyUser(request);
 
     let query = supabase
       .from("leaves")
@@ -38,14 +12,14 @@ export async function GET(request) {
       .order("created_at", { ascending: false });
 
     if (role === "user") {
-      query = query.eq("user_id", userId);
+      query = query.eq("user_id", keycloak_id);
 
     } else if (role === "manager") {
       // Find this manager's employees.id
       const { data: myRow } = await supabase
         .from("employees")
         .select("id")
-        .eq("keycloak_id", userId)
+        .eq("keycloak_id", keycloak_id)
         .single();
 
       // Find which department(s) this person manages
@@ -87,10 +61,9 @@ export async function GET(request) {
         .eq("manager_status", "pending");
 
     } else if (role === "hr" || role === "admin") {
-      query = query
-        .eq("manager_status", "Approved")
-        .eq("hr_status", "pending");
-    }
+  query = query
+    .eq("manager_status", "Approved");
+}
 
     const { data, error } = await query;
 
@@ -111,18 +84,9 @@ export async function GET(request) {
 
 export async function PUT(request) {
   try {
-    const authHeader = request.headers.get("authorization");
+    
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const token = authHeader.split(" ")[1];
-    const decoded = jwt.verify(token, process.env.KEYCLOAK_PUBLIC_KEY, {
-      algorithms: ["RS256"],
-    });
-
-    const { role } = await verifyUser(decoded);
+    const { role } = await verifyUser(request);
 
     const body = await request.json();
     const { id, status } = body;

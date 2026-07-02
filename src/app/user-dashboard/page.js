@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import keycloak from "@/lib/keycloak";
+import { Calendar, CalendarCheck, Clock3, Megaphone, ArrowRight } from "lucide-react";
 
 export default function DashboardPage() {
   const [announcements, setAnnouncements] = useState([]);
@@ -30,92 +31,123 @@ export default function DashboardPage() {
     }
   }, []);
 
+  const cards = [
+    {
+      title: "Calendar",
+      desc: "View employee attendance calendar",
+      button: "View Calendar",
+      link: "/calendar",
+      icon: Calendar,
+      iconBg: "bg-slate-100 dark:bg-slate-800",
+      iconColor: "text-slate-700 dark:text-slate-300",
+      accent: "border-l-slate-600",
+    },
+    {
+      title: "Leave Requests",
+      desc: "Submit and track your leaves",
+      button: "Apply Leave",
+      link: "/leave",
+      icon: CalendarCheck,
+      iconBg: "bg-indigo-100 dark:bg-indigo-950",
+      iconColor: "text-indigo-700 dark:text-indigo-300",
+      accent: "border-l-indigo-600",
+    },
+    {
+      title: "Attendance",
+      desc: "Check in and view your records",
+      button: "View Attendance",
+      link: "/attendance",
+      icon: Clock3,
+      iconBg: "bg-cyan-100 dark:bg-cyan-950",
+      iconColor: "text-cyan-700 dark:text-cyan-300",
+      accent: "border-l-cyan-600",
+    },
+  ];
+
   return (
     <div className="min-h-screen flex flex-col transition-colors duration-300 bg-[var(--background)] text-[var(--text)]">
 
       {/* Main Dashboard Content */}
-      <main className="flex-1 p-10">
+      <main className="flex-1 p-6 pt-10">
 
-        <h1 className="text-2xl font-bold text-[var(--text-muted)] text-left mb-12">
+        <h1 className="text-xl font-semibold text-[var(--text)] mb-8">
           User Dashboard
         </h1>
 
         {/* Overview Cards */}
-        <div className="grid grid-cols-3 gap-8 mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
 
-          <div className="bg-slate-500 border border-[var(--card)] border border-[var(--border)] shadow-xl rounded-xl p-8 hover:scale-105 transition-transform">
-            <h2 className="text-2xl font-bold text-black-500 mb-2">
-              Calendar
-            </h2>
-            <p className="text[var(--text-muted)text-black]">
-              View employee attendance calendar
-            </p>
-            <Link href="/calendar">
-              <button className="mt-4 bg-slate-900 text-white px-4 py-2 rounded-lg">
-                View Calendar
-              </button>
-            </Link>
-          </div>
+          {cards.map((card) => {
+            const Icon = card.icon;
+            return (
+              <div
+                key={card.title}
+                className={`bg-[var(--card)] border border-[var(--border)] border-l-4 ${card.accent} rounded-xl shadow-sm p-6 flex flex-col justify-between hover:shadow-md transition-all duration-200`}
+              >
+                <div className="flex items-start gap-4">
+                  <div className={`w-11 h-11 rounded-xl ${card.iconBg} flex items-center justify-center shrink-0`}>
+                    <Icon size={20} className={card.iconColor} />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-semibold text-[var(--text)]">
+                      {card.title}
+                    </h2>
+                    <p className="mt-1 text-sm text-[var(--text-muted)]">
+                      {card.desc}
+                    </p>
+                  </div>
+                </div>
 
-          <div className="bg-zinc-500 border border[var(--card)] border border-[var(--border)] shadow-xl rounded-xl p-8 hover:scale-105 transition-transform">
-            <h2 className="text-2xl font-bold text-black-500 mb-2">
-              Leave Requests
-            </h2>
-            <p className="text-[var(--text-muted)]text-black">
-              Submit and track your leaves
-            </p>
-            <Link href="/leave">
-              <button className="mt-4 bg-zinc-800 text-white px-4 py-2 rounded-lg">
-                Apply Leave
-              </button>
-            </Link>
-          </div>
-
-          <div className="bg-cyan-700 border border[var(--card)] border border-[var(--border)] shadow-xl rounded-xl p-8 hover:scale-105 transition-transform">
-            <h2 className="text-2xl font-bold text-black-500 mb-2">
-              Attendance
-            </h2>
-            <p className="text-[var(--text-muted)]text-black">
-              Check in and view your records
-            </p>
-            <Link href="/attendance">
-              <button className="mt-4 bg-cyan-900 text-white px-4 py-2 rounded-lg">
-                View Attendance
-              </button>
-            </Link>
-          </div>
+                <Link href={card.link} className="mt-5">
+                  <button className="flex items-center gap-2 bg-indigo-900 text-white text-sm font-medium py-2 px-4 rounded-lg hover:bg-indigo-800 transition">
+                    {card.button}
+                    <ArrowRight size={14} />
+                  </button>
+                </Link>
+              </div>
+            );
+          })}
 
         </div>
 
-        <div className="col-span-full w-full bg-gradient-to-r from-indigo-900 via-sky-900 to-zinc-800 text-white py-14 px-10 mt-10 rounded-xl">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10">
-            <h2 className="text-4xl font-extrabold tracking-wide flex items-center gap-3 drop-shadow-lg">
-              <span>📣</span> Announcements
-            </h2>
-            <Link href="/announcements">
-              <button className="bg-white text-indigo-900 font-semibold py-2 px-5 rounded-lg hover:bg-gray-100 transition text-sm">
-                View all
-              </button>
-            </Link>
+        {/* Announcements */}
+        <div className="bg-[var(--card)] border border-[var(--border)] rounded-xl shadow-sm overflow-hidden">
+          {/* Section header */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-5 border-b border-[var(--border)]">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-indigo-900 rounded-xl flex items-center justify-center text-white shrink-0">
+                <Megaphone size={18} />
+              </div>
+              <div>
+                <h2 className="text-base font-semibold text-[var(--text)]">Announcements</h2>
+                <p className="text-xs text-[var(--text-muted)]">Latest company updates and notices</p>
+              </div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 text-lg font-medium">
+          {/* Announcement list */}
+          <div className="p-5">
             {announcements.length === 0 ? (
-              <div className="col-span-full text-center opacity-80 text-sm">
-                No announcements at the moment.
+              <div className="text-center py-10 text-sm text-[var(--text-muted)]">
+                <Megaphone size={32} className="mx-auto mb-3 opacity-40" />
+                <p>No announcements at the moment.</p>
               </div>
             ) : (
-              announcements.map((item) => (
-                <div
-                  key={item.id}
-                  className="bg-white/20 backdrop-blur-md p-6 rounded-xl text-center hover:bg-white/30 transition-all duration-300 shadow-lg"
-                >
-                  <h3 className="text-xl font-semibold mb-2">
-                    {item.emoji || "📣"} {item.title}
-                  </h3>
-                  <p className="text-sm opacity-90">{item.message}</p>
-                </div>
-              ))
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {announcements.map((item) => (
+                  <div
+                    key={item.id}
+                    className="group bg-[var(--background)] border border-[var(--border)] rounded-xl p-4 hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-md transition-all duration-200 flex flex-col"
+                  >
+                    <h3 className="text-sm font-semibold text-[var(--text)] leading-snug mb-1.5 group-hover:text-indigo-700 dark:group-hover:text-indigo-400 transition-colors">
+                      {item.emoji || "📣"} {item.title}
+                    </h3>
+                    <p className="text-xs text-[var(--text-muted)] line-clamp-2 flex-1">
+                      {item.message}
+                    </p>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </div>

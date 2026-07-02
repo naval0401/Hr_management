@@ -64,7 +64,7 @@ const handleClick = async (notification) => {
     console.error("Failed to mark notification as read:", err);
   }
 
-  if (notification.type === "leave") {
+  if (notification.type === "leave" || notification.type === "document") {
     router.push("/pending");
   }
 };
@@ -88,15 +88,11 @@ const handleClick = async (notification) => {
           <div
             key={n.id}
             onClick={() => handleClick(n)}
-            className={`p-4 rounded shadow cursor-pointer hover:opacity-80 transition ${
-              n.type === "leave"
-                ? "bg-yellow-100 dark:bg-yellow-900"
-                : n.type === "attendance"
-                ? "bg-blue-100 dark:bg-blue-900"
-                : n.type === "document"
-                ? "bg-green-100 dark:bg-green-900"
-                : "bg-gray-100 dark:bg-slate-800"
-            }`}
+            className={`p-4 rounded shadow cursor-pointer hover:opacity-80 transition border ${
+  n.is_read
+    ? "bg-[var(--card)] border-[var(--border)] text-[var(--text)]"
+    : "bg-orange-400 border-orange-500 text-white"
+}`}
           >
             <p className="font-semibold">{n.title}</p>
             <p className="text-sm">{n.message}</p>

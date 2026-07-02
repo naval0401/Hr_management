@@ -5,10 +5,22 @@ import keycloak from '@/lib/keycloak';
 
 export default function PendingPage() {
   const [leaves, setLeaves] = useState([]);
+  const [docRequests, setDocRequests] = useState([]);
+  const [userole, setUserRole] = useState("");
+
+  const fetchRole = async () => {
+  const res = await fetch("/api/me", {
+    headers: { Authorization: `Bearer ${keycloak.token}` },
+  });
+  const data = await res.json();
+  setUserRole(data?.role || "user");
+};
 
   useEffect(() => {
     if (keycloak?.authenticated && keycloak?.token) {
+      fetchRole();
       fetchLeaves();
+      fetchDocRequests();
     }
   }, [keycloak?.authenticated, keycloak?.token]);
 
@@ -24,6 +36,8 @@ export default function PendingPage() {
 
     return () => clearInterval(interval);
   }, []);
+
+
 
   const fetchLeaves = async () => {
     try {
@@ -50,6 +64,22 @@ export default function PendingPage() {
     }
   };
 
+  const fetchDocRequests = async () => {
+    try {
+      if (!keycloak?.token) return;
+
+      const res = await fetch("/api/document-request", {
+        headers: { Authorization: `Bearer ${keycloak.token}` },
+      });
+
+      const data = await res.json();
+      setDocRequests(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error(err);
+      setDocRequests([]);
+    }
+  };
+
   const handleStatusChange = async (id, newStatus) => {
     try {
       const res = await fetch("/api/pending", {
@@ -69,18 +99,40 @@ export default function PendingPage() {
       }
 
       setLeaves((prev) =>
-        prev.map((leave) =>
-          leave.id === id ? { ...leave, status: newStatus } : leave
-        )
-      );
+  prev.map((leave) =>
+    leave.id === id ? { ...leave, hr_status: newStatus, status: newStatus } : leave
+  )
+);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDocStatus = async (id, newStatus) => {
+    try {
+      const res = await fetch("/api/document-request", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${keycloak.token}`,
+        },
+        body: JSON.stringify({ id, status: newStatus }),
+      });
+
+      if (res.ok) {
+        setDocRequests((prev) =>
+          prev.map((req) => req.id === id ? { ...req, status: newStatus } : req)
+        );
+      }
     } catch (err) {
       console.error(err);
     }
   };
 
   return (
-    <div className="pt-16 p-6 bg-[var(--background)] text-[var(--text)] min-h-screen ">
+    <div className="pt-16 p-6 bg-[var(--background)] text-[var(--text)] min-h-screen">
 
+      {/* Leave Requests Header */}
       <div className="mb-10 bg-[var(--card)] border border-[var(--border)] p-4 rounded-xl shadow-sm flex justify-between items-center">
         <div>
           <h1 className="text-xl font-semibold text-[var(--text)]">
@@ -92,7 +144,7 @@ export default function PendingPage() {
         </div>
       </div>
 
-      {/* Header */}
+      {/* Leave Header */}
       <div className="grid grid-cols-5 items-center bg-indigo-900 text-white text-sm font-semibold px-6 py-4 rounded-xl shadow-sm mb-4">
         <div>Employee</div>
         <div>Reason</div>
@@ -101,7 +153,7 @@ export default function PendingPage() {
         <div>Status</div>
       </div>
 
-      {/* Rows */}
+      {/* Leave Rows */}
       <div className="space-y-4">
         {leaves.map((leave) => (
           <div
@@ -125,30 +177,95 @@ export default function PendingPage() {
             </div>
 
             <div>
-  <select
-    value={leave.status}
-    onChange={(e) => handleStatusChange(leave.id, e.target.value)}
-    className={`px-3 py-1 text-sm rounded-full shadow-sm cursor-pointer border-none outline-none font-medium ${
-      leave.status === "Approved"
-        ? "bg-green-500 text-white"
-        : leave.status === "Rejected"
-        ? "bg-red-500 text-white"
-        : "bg-yellow-500 text-black"
-    }`}
-  >
-    <option value="pending">pending</option>
-    <option value="Approved">Approved</option>
-    <option value="Rejected">Rejected</option>
-  </select>
-</div>
+              <select
+                value={leave.status}
+                onChange={(e) => handleStatusChange(leave.id, e.target.value)}
+                className={`px-3 py-1 text-sm rounded-full shadow-sm cursor-pointer border-none outline-none font-medium ${
+                  leave.status === "Approved"
+                    ? "bg-green-500 text-white"
+                    : leave.status === "Rejected"
+                    ? "bg-red-500 text-white"
+                    : "bg-yellow-500 text-black"
+                }`}
+              >
+                <option value="pending">pending</option>
+                <option value="Approved">Approved</option>
+                <option value="Rejected">Rejected</option>
+              </select>
+            </div>
           </div>
         ))}
+      </div>
+
+      {/* Document Requests Section */}
+      <div className="mt-10">
+        <div className="mb-4 bg-[var(--card)] border border-[var(--border)] p-4 rounded-xl shadow-sm flex justify-between items-center">
+          <div>
+            <h1 className="text-xl font-semibold text-[var(--text)]">
+              Document Requests
+            </h1>
+            <p className="text-xs text-[var(--text-muted)]">
+              Pending document requests from employees
+            </p>
+          </div>
+        </div>
+
+        {/* Document Header */}
+        <div className="grid grid-cols-4 items-center bg-indigo-900 text-white text-sm font-semibold px-6 py-4 rounded-xl shadow-sm mb-4">
+          <div>Employee ID</div>
+          <div>Document Type</div>
+          <div>Reason</div>
+          <div>Status</div>
+        </div>
+
+        {/* Document Rows */}
+        <div className="space-y-4">
+          {docRequests.length === 0 ? (
+            <p className="text-sm text-[var(--text-muted)] px-2">No document requests yet.</p>
+          ) : (
+            docRequests.map((req) => (
+              <div
+                key={req.id}
+                className="grid grid-cols-4 items-center bg-[var(--card)] border border-[var(--border)] px-6 py-4 rounded-xl shadow-sm hover:shadow-md transition"
+              >
+                <div className="font-medium text-[var(--text)]">
+  {req.employees?.employee_name || "-"}
+</div>
+
+                <div className="text-[var(--text-muted)]">
+                  {req.document_type}
+                </div>
+
+                <div className="text-[var(--text-muted)]">
+                  {req.reason}
+                </div>
+
+                <div>
+                  <select
+                    value={req.status}
+                    onChange={(e) => handleDocStatus(req.id, e.target.value)}
+                    className={`px-3 py-1 text-sm rounded-full shadow-sm cursor-pointer border-none outline-none font-medium ${
+                      req.status === "approved"
+                        ? "bg-green-500 text-white"
+                        : req.status === "rejected"
+                        ? "bg-red-500 text-white"
+                        : "bg-yellow-500 text-black"
+                    }`}
+                  >
+                    <option value="pending">pending</option>
+                    <option value="approved">approved</option>
+                    <option value="rejected">rejected</option>
+                  </select>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </div>
 
     </div>
   );
 }
-
 
 // Date format
 function formatDate(date) {

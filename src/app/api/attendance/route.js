@@ -1,63 +1,59 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import jwt from "jsonwebtoken";
+import { verifyUser } from "@/lib/auth";
 
-// GET
+// ================= SAFE DATE =================
+const getToday = () => {
+  const d = new Date();
+  return (
+    d.getFullYear() +
+    "-" +
+    String(d.getMonth() + 1).padStart(2, "0") +
+    "-" +
+    String(d.getDate()).padStart(2, "0")
+  );
+};
+
+// =================  GET  =================
 export async function GET(request) {
   try {
-    const token = request.headers.get("authorization")?.split(" ")[1];
+    const { role } = await verifyUser(request);
 
-    if (!token) {
-      return NextResponse.json({ error: "No token" }, { status: 401 });
+    if (role !== "hr" && role !== "admin") {
+      return NextResponse.json(
+        { error: "Forbidden - HR only" },
+        { status: 403 }
+      );
     }
-
-    const decoded = jwt.verify(
-      token,
-      process.env.KEYCLOAK_PUBLIC_KEY,
-      { algorithms: ["RS256"] }
-    );
-
-    const userId = decoded.sub;
 
     const { data, error } = await supabase
       .from("attendance")
       .select("*")
-      .eq("employee_id", userId)
       .order("date", { ascending: false });
 
     if (error) throw error;
 
     return NextResponse.json(data || []);
   } catch (err) {
+    console.log("GET ALL ERROR:", err);
     return NextResponse.json(
-      { error: err.message || "Unauthorized" },
-      { status: 401 }
+      { error: err.message || "Server error" },
+      { status: 500 }
     );
   }
 }
 
-// POST
+// =================  POST =================
 export async function POST(request) {
   try {
-    const token = request.headers.get("authorization")?.split(" ")[1];
+    const { keycloak_id: userId } = await verifyUser(request);
 
-    if (!token) {
-      return NextResponse.json({ error: "No token" }, { status: 401 });
-    }
-
-    const decoded = jwt.verify(
-      token,
-      process.env.KEYCLOAK_PUBLIC_KEY,
-      { algorithms: ["RS256"] }
-    );
-
-    const userId = decoded.sub;
     const { type } = await request.json();
 
-    const now = new Date();
-    const today = now.toISOString().split("T")[0];
+    const today = getToday();
+    const now = new Date().toISOString();
 
-    // check existing
+    // CHECK EXISTING
     const { data: existing } = await supabase
       .from("attendance")
       .select("*")
@@ -76,14 +72,14 @@ export async function POST(request) {
 
       let status = "Present";
 
+      const nowDate = new Date();
       if (
-        now.getHours() > 9 ||
-        (now.getHours() === 9 && now.getMinutes() > 30)
+        nowDate.getHours() > 9 ||
+        (nowDate.getHours() === 9 && nowDate.getMinutes() > 30)
       ) {
         status = "Late";
       }
 
-      // 🔥 ADD THIS (employee name fetch)
       const { data: employee, error: empError } = await supabase
         .from("employees")
         .select("employee_name")
@@ -94,7 +90,7 @@ export async function POST(request) {
 
       const { error } = await supabase.from("attendance").insert({
         employee_id: userId,
-        employee_name: employee?.employee_name, // ✅ FIX ADDED
+        employee_name: employee?.employee_name,
         date: today,
         check_in: now,
         status: status,
@@ -135,7 +131,7 @@ export async function POST(request) {
       let status = existing.status;
 
       const checkInTime = new Date(existing.check_in);
-      const hoursWorked = (now - checkInTime) / (1000 * 60 * 60);
+      const hoursWorked = (new Date() - checkInTime) / (1000 * 60 * 60);
 
       if (hoursWorked < 4) {
         status = "Half Day";
@@ -160,6 +156,7 @@ export async function POST(request) {
     return NextResponse.json({ success: true });
 
   } catch (err) {
+    console.log("POST ERROR:", err);
     return NextResponse.json(
       { error: err.message || "Server error" },
       { status: 500 }

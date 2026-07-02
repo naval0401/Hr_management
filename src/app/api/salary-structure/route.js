@@ -1,49 +1,13 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import jwt from "jsonwebtoken";
+import { verifyUser } from "@/lib/auth";
 
-async function verifyToken(request) {
-  const authHeader = request.headers.get("authorization");
-
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return null;
-  }
-
-  const token = authHeader.split(" ")[1];
-
-  const decoded = jwt.verify(
-    token,
-    process.env.KEYCLOAK_PUBLIC_KEY,
-    { algorithms: ["RS256"] }
-  );
-
-  const userId = decoded.sub;
-
-  // Role now comes from Supabase (employees.role), not from Keycloak.
-  const { data: empData } = await supabase
-    .from("employees")
-    .select("role")
-    .eq("keycloak_id", userId)
-    .single();
-
-  const role = empData?.role || "user";
-
-  return {
-    userId,
-    role,
-  };
-}
-
-// GET — HR/admin see all salary structures, joined with employee name
+// GET — HR/admin see all salary structures
 export async function GET(request) {
   try {
-    const user = await verifyToken(request);
+    const { role } = await verifyUser(request);
 
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    if (user.role !== "hr" && user.role !== "admin") {
+    if (role !== "hr" && role !== "admin") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -69,13 +33,9 @@ export async function GET(request) {
 // POST — HR/admin sets a new salary structure for an employee
 export async function POST(request) {
   try {
-    const user = verifyToken(request);
+    const { role } = await verifyUser(request);
 
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    if (user.role !== "hr" && user.role !== "admin") {
+    if (role !== "hr" && role !== "admin") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -120,13 +80,9 @@ export async function POST(request) {
 // PUT — HR/admin edits an existing salary structure
 export async function PUT(request) {
   try {
-    const user = verifyToken(request);
+    const { role } = await verifyUser(request);
 
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    if (user.role !== "hr" && user.role !== "admin") {
+    if (role !== "hr" && role !== "admin") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

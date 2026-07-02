@@ -1,46 +1,15 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import jwt from "jsonwebtoken";
-
-// 🔐 VERIFY TOKEN
-const verifyUser = (request) => {
-  const token = request.headers.get("authorization")?.split(" ")[1];
-
-  if (!token) throw new Error("No token");
-
-  const decoded = jwt.verify(
-    token,
-    process.env.KEYCLOAK_PUBLIC_KEY,
-    { algorithms: ["RS256"] }
-  );
-
-  return decoded;
-};
-
-// 🧑‍💼 ROLE CHECK (HR / ADMIN)
-// Role now comes from Supabase (employees.role), not from Keycloak.
-const isAllowed = async (decoded) => {
-  const { data: empData } = await supabase
-    .from("employees")
-    .select("role")
-    .eq("keycloak_id", decoded.sub)
-    .single();
-
-  const role = empData?.role || "user";
-  return role === "hr" || role === "admin";
-};
+import { verifyUser } from "@/lib/auth";
 
 // GET — list employees, with optional ?department= and ?status= filters
 export async function GET(request) {
   try {
-    const decoded = verifyUser(request);
+    const { role } = await verifyUser(request);
 
-    if (!(await isAllowed(decoded))) {
-      return NextResponse.json(
-        { error: "Forbidden" },
-        { status: 403 }
-      );
-    }
+if (!(role === "hr" || role === "admin")) {
+  return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+}
 
     const { searchParams } = new URL(request.url);
     const department = searchParams.get("department");
@@ -76,11 +45,11 @@ export async function GET(request) {
 // POST — add a new employee
 export async function POST(request) {
   try {
-    const decoded = verifyUser(request);
+    const { role } = await verifyUser(request);
 
-    if (!isAllowed(decoded)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+if (!(role === "hr" || role === "admin")) {
+  return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+}
 
     const body = await request.json();
     const {
@@ -132,11 +101,11 @@ export async function POST(request) {
 // PUT — edit an existing employee
 export async function PUT(request) {
   try {
-    const decoded = verifyUser(request);
+    const { role } = await verifyUser(request);
 
-    if (!isAllowed(decoded)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+if (!(role === "hr" || role === "admin")) {
+  return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+}
 
     const body = await request.json();
     const { id, ...fields } = body;
@@ -166,11 +135,11 @@ export async function PUT(request) {
 // DELETE — remove an employee
 export async function DELETE(request) {
   try {
-    const decoded = verifyUser(request);
+    const { role } = await verifyUser(request);
 
-    if (!isAllowed(decoded)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+if (!(role === "hr" || role === "admin")) {
+  return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+}
 
     const body = await request.json();
     const { id } = body;

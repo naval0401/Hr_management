@@ -1,76 +1,40 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import jwt from "jsonwebtoken";
+import { verifyUser } from "@/lib/auth";
 
-// ================= SAFE DATE =================
-const getToday = () => {
-  const d = new Date();
-  return (
-    d.getFullYear() +
-    "-" +
-    String(d.getMonth() + 1).padStart(2, "0") +
-    "-" +
-    String(d.getDate()).padStart(2, "0")
-  );
-};
-
-// ================= VERIFY TOKEN =================
-const verifyUser = (request) => {
-  const token = request.headers.get("authorization")?.split(" ")[1];
-  if (!token) throw new Error("No token");
-
-  return jwt.verify(token, process.env.KEYCLOAK_PUBLIC_KEY, {
-    algorithms: ["RS256"],
-  });
-};
-
-// ================= HR CHECK =================
-const isHR = (decoded) => {
-  return decoded?.realm_access?.roles?.includes("hr");
-};
-
-// =================  GET  =================
+// GET
 export async function GET(request) {
   try {
-    const decoded = verifyUser(request);
-
-    if (!isHR(decoded)) {
-      return NextResponse.json(
-        { error: "Forbidden - HR only" },
-        { status: 403 }
-      );
-    }
+    const { keycloak_id: userId } = await verifyUser(request);
 
     const { data, error } = await supabase
       .from("attendance")
       .select("*")
+      .eq("employee_id", userId)
       .order("date", { ascending: false });
 
     if (error) throw error;
 
     return NextResponse.json(data || []);
   } catch (err) {
-    console.log("GET ALL ERROR:", err);
     return NextResponse.json(
-      { error: err.message || "Server error" },
-      { status: 500 }
+      { error: err.message || "Unauthorized" },
+      { status: 401 }
     );
   }
 }
 
-// =================  POST =================
+// POST
 export async function POST(request) {
   try {
-    const decoded = verifyUser(request);
-
-    const userId = decoded.sub;
+    const { keycloak_id: userId } = await verifyUser(request);
 
     const { type } = await request.json();
 
-    const today = getToday();
-    const now = new Date().toISOString();
+    const now = new Date();
+    const today = now.toISOString().split("T")[0];
 
-    // CHECK EXISTING
+    // check existing
     const { data: existing } = await supabase
       .from("attendance")
       .select("*")
@@ -89,15 +53,13 @@ export async function POST(request) {
 
       let status = "Present";
 
-      const nowDate = new Date();
       if (
-        nowDate.getHours() > 9 ||
-        (nowDate.getHours() === 9 && nowDate.getMinutes() > 30)
+        now.getHours() > 9 ||
+        (now.getHours() === 9 && now.getMinutes() > 30)
       ) {
         status = "Late";
       }
 
-      // 🔥 GET EMPLOYEE NAME FROM EMPLOYEES TABLE
       const { data: employee, error: empError } = await supabase
         .from("employees")
         .select("employee_name")
@@ -108,7 +70,7 @@ export async function POST(request) {
 
       const { error } = await supabase.from("attendance").insert({
         employee_id: userId,
-        employee_name: employee?.employee_name, // ✅ FIX
+        employee_name: employee?.employee_name,
         date: today,
         check_in: now,
         status: status,
@@ -149,8 +111,7 @@ export async function POST(request) {
       let status = existing.status;
 
       const checkInTime = new Date(existing.check_in);
-      const hoursWorked =
-        (new Date() - checkInTime) / (1000 * 60 * 60);
+      const hoursWorked = (now - checkInTime) / (1000 * 60 * 60);
 
       if (hoursWorked < 4) {
         status = "Half Day";
@@ -175,7 +136,6 @@ export async function POST(request) {
     return NextResponse.json({ success: true });
 
   } catch (err) {
-    console.log("POST ERROR:", err);
     return NextResponse.json(
       { error: err.message || "Server error" },
       { status: 500 }

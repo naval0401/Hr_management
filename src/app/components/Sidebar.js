@@ -1,6 +1,6 @@
 'use client';
 
-import { LayoutDashboard, Calendar, UsersIcon, LucideSettings, ClipboardCheck, CalendarDays, Clock3, Megaphone, WalletCards } from "lucide-react";
+import { LayoutDashboard, Calendar, UsersIcon, LucideSettings, ClipboardCheck, CalendarDays, Clock3, Megaphone, WalletCards, Files, FilesIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
@@ -58,7 +58,18 @@ export default function Sidebar({ collapsed }) {
             text="Payroll"
             href="/payroll"
             active={pathname === "/payroll"}
-            collapsed={collapsed}
+            collapsed={collapsed} 
+          />
+        )}
+
+        {/* Documents page visible only for HR */}
+        {isHR && (
+          <SidebarItem
+            icon={<Files size={18} />}
+            text="Documents"
+            href="/documents"
+            active={pathname === "/documents"}
+            collapsed={collapsed} 
           />
         )}
 
@@ -74,6 +85,21 @@ export default function Sidebar({ collapsed }) {
     collapsed={collapsed}
   />
 )}
+
+{(keycloak?.tokenParsed?.realm_access?.roles?.includes("user") ||
+  keycloak?.tokenParsed?.realm_access?.roles?.includes("manager") ||
+  keycloak?.tokenParsed?.preferred_username === "vrish" ||
+  keycloak?.tokenParsed?.preferred_username === "lalit-himanshu") && (
+  <SidebarItem
+    icon={<FilesIcon size={18} />}
+    text="document request"
+    href="/document-request"
+    active={pathname === "/document-request"}
+    collapsed={collapsed}
+  />
+)}
+
+
 
         <SidebarItem
           icon={<ClipboardCheck size={18} />}

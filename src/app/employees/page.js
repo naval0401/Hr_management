@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Eye, Pencil, Trash2, X, Users, UserCheck, UserX } from "lucide-react";
 import keycloak from "@/lib/keycloak";
+import EmployeeDocuments from "../components/EmployeeDocuments";
 
 export default function EmployeesPage() {
   const [employees, setEmployees] = useState([]);
@@ -629,14 +630,8 @@ export default function EmployeesPage() {
                 )}
 
                 {activeTab === "documents" && (
-                  <div className="text-sm">
-                    <p className="text-[var(--text-muted)] mb-1">Skills</p>
-                    <p className="font-medium text-[var(--text)] mb-4">{viewEmployee.skills || "Not added"}</p>
-
-                    <p className="text-[var(--text-muted)] mb-1">Documents Notes</p>
-                    <p className="font-medium text-[var(--text)]">{viewEmployee.documents_notes || "Not added"}</p>
-                  </div>
-                )}
+  <EmployeeDocuments employeeId={viewEmployee.id} token={keycloak.token} />
+)}
               </>
             ) : (
               <>
@@ -779,7 +774,7 @@ export default function EmployeesPage() {
                     <div>
                       <label className="text-xs text-[var(--text-muted)]">Status</label>
                       <select
-                        value={editData.status}
+                        value={editData.status ?? true}
                         onChange={(e) => setEditData({ ...editData, status: e.target.value === "true" })}
                         className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 text-sm outline-none text-[var(--text)]"
                       >

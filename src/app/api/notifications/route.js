@@ -1,62 +1,22 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import jwt from "jsonwebtoken";
-
-async function verifyToken(request) {
-  const authHeader = request.headers.get("authorization");
-
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return null;
-  }
-
-  const token = authHeader.split(" ")[1];
-
-  const decoded = jwt.verify(
-    token,
-    process.env.KEYCLOAK_PUBLIC_KEY,
-    { algorithms: ["RS256"] }
-  );
-
-  const userId = decoded.sub;
-
-  // Role now comes from Supabase (employees.role), not from Keycloak.
-  const { data: empData } = await supabase
-    .from("employees")
-    .select("role")
-    .eq("keycloak_id", userId)
-    .single();
-
-  const role = empData?.role || "user";
-
-  return {
-    userId,
-    name: decoded.name || decoded.preferred_username || "User",
-    role,
-  };
-}
+import { verifyUser } from "@/lib/auth";
 
 export async function GET(request) {
   try {
-    const user = await verifyToken(request);
+    const { role, keycloak_id } = await verifyUser(request);
 
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // hr/admin: see hr/admin/all notifications
-    // manager: see notifications specifically addressed to them (employee_id match) or role=manager/all
-    // regular users: see role=user or all
     let query = supabase
       .from("notifications")
       .select("*")
       .order("created_at", { ascending: false });
 
-    if (user.role === "admin" || user.role === "hr") {
+    if (role === "admin" || role === "hr") {
       query = query.or(`role.eq.hr,role.eq.admin,role.eq.all`);
-    } else if (user.role === "manager") {
-      query = query.or(`role.eq.manager,role.eq.all,employee_id.eq.${user.userId}`);
+    } else if (role === "manager") {
+      query = query.or(`role.eq.manager,role.eq.all,employee_id.eq.${keycloak_id}`);
     } else {
-      query = query.or(`role.eq.user,role.eq.all,employee_id.eq.${user.userId}`);
+      query = query.or(`role.eq.user,role.eq.all,employee_id.eq.${keycloak_id}`);
     }
 
     const { data, error } = await query;
@@ -77,25 +37,21 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const user = verifyToken(request);
+    const { role } = await verifyUser(request);
 
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    if (user.role !== "hr" && user.role !== "admin") {
+    if (role !== "hr" && role !== "admin") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const body = await request.json();
-    const { employee_id, role, title, message, type } = body;
+    const { employee_id, role: notifRole, title, message, type } = body;
 
     const { data, error } = await supabase
       .from("notifications")
       .insert([
         {
           employee_id: employee_id || null,
-          role: role || "all",
+          role: notifRole || "all",
           title,
           message,
           type: type || "general",
@@ -120,11 +76,7 @@ export async function POST(request) {
 
 export async function PATCH(request) {
   try {
-    const user = verifyToken(request);
-
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    await verifyUser(request);
 
     const { id } = await request.json();
 
