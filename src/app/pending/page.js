@@ -1,20 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Clock, CheckCircle, FileText, Calendar } from 'lucide-react';
 import keycloak from '@/lib/keycloak';
 
 export default function PendingPage() {
   const [leaves, setLeaves] = useState([]);
   const [docRequests, setDocRequests] = useState([]);
-  const [userole, setUserRole] = useState("");
-
-  const fetchRole = async () => {
-  const res = await fetch("/api/me", {
-    headers: { Authorization: `Bearer ${keycloak.token}` },
-  });
-  const data = await res.json();
-  setUserRole(data?.role || "user");
-};
+  const [userRole, setUserRole] = useState("");
 
   useEffect(() => {
     if (keycloak?.authenticated && keycloak?.token) {
@@ -33,30 +26,25 @@ export default function PendingPage() {
         });
       }
     }, 10000);
-
     return () => clearInterval(interval);
   }, []);
 
-
+  const fetchRole = async () => {
+    const res = await fetch("/api/me", {
+      headers: { Authorization: `Bearer ${keycloak.token}` },
+    });
+    const data = await res.json();
+    setUserRole(data?.role || "user");
+  };
 
   const fetchLeaves = async () => {
     try {
       if (!keycloak?.token) return;
-
       const res = await fetch("/api/pending", {
-        headers: {
-          Authorization: `Bearer ${keycloak.token}`,
-        },
+        headers: { Authorization: `Bearer ${keycloak.token}` },
       });
-
       const data = await res.json();
-
-      if (!res.ok) {
-        console.error(data.error);
-        setLeaves([]);
-        return;
-      }
-
+      if (!res.ok) { setLeaves([]); return; }
       setLeaves(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error(err);
@@ -67,11 +55,9 @@ export default function PendingPage() {
   const fetchDocRequests = async () => {
     try {
       if (!keycloak?.token) return;
-
       const res = await fetch("/api/document-request", {
         headers: { Authorization: `Bearer ${keycloak.token}` },
       });
-
       const data = await res.json();
       setDocRequests(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -80,7 +66,7 @@ export default function PendingPage() {
     }
   };
 
-  const handleStatusChange = async (id, newStatus) => {
+  const handleLeaveStatus = async (id, newStatus) => {
     try {
       const res = await fetch("/api/pending", {
         method: "PUT",
@@ -90,19 +76,13 @@ export default function PendingPage() {
         },
         body: JSON.stringify({ id, status: newStatus }),
       });
-
       const data = await res.json();
-
-      if (!res.ok) {
-        console.error(data.error);
-        return;
-      }
-
+      if (!res.ok) { console.error(data.error); return; }
       setLeaves((prev) =>
-  prev.map((leave) =>
-    leave.id === id ? { ...leave, hr_status: newStatus, status: newStatus } : leave
-  )
-);
+        prev.map((leave) =>
+          leave.id === id ? { ...leave, hr_status: newStatus, status: newStatus } : leave
+        )
+      );
     } catch (err) {
       console.error(err);
     }
@@ -118,7 +98,6 @@ export default function PendingPage() {
         },
         body: JSON.stringify({ id, status: newStatus }),
       });
-
       if (res.ok) {
         setDocRequests((prev) =>
           prev.map((req) => req.id === id ? { ...req, status: newStatus } : req)
@@ -129,149 +108,133 @@ export default function PendingPage() {
     }
   };
 
+  // Dono ko merge karo aur created_at se sort karo
+  const allItems = [
+    ...leaves.map((l) => ({ ...l, _type: "leave" })),
+    ...docRequests.map((d) => ({ ...d, _type: "document" })),
+  ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+  const getStatusColor = (status) => {
+    const s = status?.toLowerCase();
+    if (s === "approved") return "bg-green-500 text-white";
+    if (s === "rejected") return "bg-red-500 text-white";
+    return "bg-yellow-500 text-black";
+  };
+
+  const formatDate = (date) => {
+    return new Date(date).toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+  };
+
+  const timeAgo = (dateStr) => {
+    const now = new Date();
+    const date = new Date(dateStr);
+    const diff = Math.floor((now - date) / 1000);
+    if (diff < 60) return "just now";
+    if (diff < 3600) return `${Math.floor(diff / 60)} min ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)} hr ago`;
+    return `${Math.floor(diff / 86400)} day ago`;
+  };
+
   return (
     <div className="pt-16 p-6 bg-[var(--background)] text-[var(--text)] min-h-screen">
 
-      {/* Leave Requests Header */}
-      <div className="mb-10 bg-[var(--card)] border border-[var(--border)] p-4 rounded-xl shadow-sm flex justify-between items-center">
+      {/* Page Header */}
+      <div className="mb-8 bg-[var(--card)] border border-[var(--border)] p-5 rounded-xl shadow-sm flex items-center gap-4">
+        <div className="w-11 h-11 bg-indigo-900 rounded-xl flex items-center justify-center text-white shrink-0">
+          <Clock size={22} />
+        </div>
         <div>
-          <h1 className="text-xl font-semibold text-[var(--text)]">
-            Recent Leave Requests
-          </h1>
+          <h1 className="text-xl font-semibold text-[var(--text)]">Pending Requests</h1>
           <p className="text-xs text-[var(--text-muted)]">
-            Overview of all submitted leaves
+            All pending approvals — {allItems.length} total
           </p>
         </div>
       </div>
 
-      {/* Leave Header */}
-      <div className="grid grid-cols-5 items-center bg-indigo-900 text-white text-sm font-semibold px-6 py-4 rounded-xl shadow-sm mb-4">
-        <div>Employee</div>
-        <div>Reason</div>
-        <div>From</div>
-        <div>To</div>
-        <div>Status</div>
-      </div>
-
-      {/* Leave Rows */}
+      {/* Feed */}
       <div className="space-y-4">
-        {leaves.map((leave) => (
-          <div
-            key={leave.id}
-            className="grid grid-cols-5 items-center bg-[var(--card)] border border-[var(--border)] px-6 py-4 rounded-xl shadow-sm hover:shadow-md transition"
-          >
-            <div className="font-medium text-[var(--text)]">
-              {leave.name}
-            </div>
-
-            <div className="text-[var(--text-muted)]">
-              {leave.reason}
-            </div>
-
-            <div className="text-[var(--text-muted)]">
-              {formatDate(leave.from_date)}
-            </div>
-
-            <div className="text-[var(--text-muted)]">
-              {formatDate(leave.to_date)}
-            </div>
-
-            <div>
-              <select
-                value={leave.status}
-                onChange={(e) => handleStatusChange(leave.id, e.target.value)}
-                className={`px-3 py-1 text-sm rounded-full shadow-sm cursor-pointer border-none outline-none font-medium ${
-                  leave.status === "Approved"
-                    ? "bg-green-500 text-white"
-                    : leave.status === "Rejected"
-                    ? "bg-red-500 text-white"
-                    : "bg-yellow-500 text-black"
-                }`}
-              >
-                <option value="pending">pending</option>
-                <option value="Approved">Approved</option>
-                <option value="Rejected">Rejected</option>
-              </select>
-            </div>
+        {allItems.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-[var(--text-muted)]">
+            <CheckCircle size={40} className="mb-3 opacity-30" />
+            <p className="text-sm">No pending requests!</p>
           </div>
-        ))}
-      </div>
-
-      {/* Document Requests Section */}
-      <div className="mt-10">
-        <div className="mb-4 bg-[var(--card)] border border-[var(--border)] p-4 rounded-xl shadow-sm flex justify-between items-center">
-          <div>
-            <h1 className="text-xl font-semibold text-[var(--text)]">
-              Document Requests
-            </h1>
-            <p className="text-xs text-[var(--text-muted)]">
-              Pending document requests from employees
-            </p>
-          </div>
-        </div>
-
-        {/* Document Header */}
-        <div className="grid grid-cols-4 items-center bg-indigo-900 text-white text-sm font-semibold px-6 py-4 rounded-xl shadow-sm mb-4">
-          <div>Employee ID</div>
-          <div>Document Type</div>
-          <div>Reason</div>
-          <div>Status</div>
-        </div>
-
-        {/* Document Rows */}
-        <div className="space-y-4">
-          {docRequests.length === 0 ? (
-            <p className="text-sm text-[var(--text-muted)] px-2">No document requests yet.</p>
-          ) : (
-            docRequests.map((req) => (
-              <div
-                key={req.id}
-                className="grid grid-cols-4 items-center bg-[var(--card)] border border-[var(--border)] px-6 py-4 rounded-xl shadow-sm hover:shadow-md transition"
-              >
-                <div className="font-medium text-[var(--text)]">
-  {req.employees?.employee_name || "-"}
-</div>
-
-                <div className="text-[var(--text-muted)]">
-                  {req.document_type}
-                </div>
-
-                <div className="text-[var(--text-muted)]">
-                  {req.reason}
+        ) : (
+          allItems.map((item) => (
+            <div
+              key={`${item._type}-${item.id}`}
+              className="bg-[var(--card)] border border-[var(--border)] rounded-xl px-6 py-4 shadow-sm hover:shadow-md transition flex items-center justify-between gap-4"
+            >
+              {/* Left — Icon + Info */}
+              <div className="flex items-center gap-4">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                  item._type === "leave"
+                    ? "bg-indigo-100 dark:bg-indigo-900/30"
+                    : "bg-green-100 dark:bg-green-900/30"
+                }`}>
+                  {item._type === "leave"
+                    ? <Calendar size={18} className="text-indigo-700 dark:text-indigo-400" />
+                    : <FileText size={18} className="text-green-700 dark:text-green-400" />
+                  }
                 </div>
 
                 <div>
-                  <select
-                    value={req.status}
-                    onChange={(e) => handleDocStatus(req.id, e.target.value)}
-                    className={`px-3 py-1 text-sm rounded-full shadow-sm cursor-pointer border-none outline-none font-medium ${
-                      req.status === "approved"
-                        ? "bg-green-500 text-white"
-                        : req.status === "rejected"
-                        ? "bg-red-500 text-white"
-                        : "bg-yellow-500 text-black"
-                    }`}
-                  >
-                    <option value="pending">pending</option>
-                    <option value="approved">approved</option>
-                    <option value="rejected">rejected</option>
-                  </select>
+                  {item._type === "leave" ? (
+                    <>
+                      <p className="text-sm font-semibold text-[var(--text)]">
+                        {item.name} applied for leave
+                      </p>
+                      <p className="text-xs text-[var(--text-muted)]">
+                        {item.reason} · {formatDate(item.from_date)} → {formatDate(item.to_date)}
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-sm font-semibold text-[var(--text)]">
+                        {item.employees?.employee_name || "Employee"} requested {item.document_type}
+                      </p>
+                      <p className="text-xs text-[var(--text-muted)]">
+                        {item.reason}
+                      </p>
+                    </>
+                  )}
+                  <p className="text-xs text-[var(--text-muted)] mt-0.5">
+                    {timeAgo(item.created_at)}
+                  </p>
                 </div>
               </div>
-            ))
-          )}
-        </div>
-      </div>
 
+              {/* Right — Status Select */}
+              <div className="shrink-0">
+                {item._type === "leave" ? (
+                  <select
+                    value={item.status}
+                    onChange={(e) => handleLeaveStatus(item.id, e.target.value)}
+                    className={`px-3 py-1.5 text-sm rounded-full shadow-sm cursor-pointer border-none outline-none font-medium ${getStatusColor(item.status)}`}
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="Approved">Approved</option>
+                    <option value="Rejected">Rejected</option>
+                  </select>
+                ) : (
+                  <select
+                    value={item.status}
+                    onChange={(e) => handleDocStatus(item.id, e.target.value)}
+                    className={`px-3 py-1.5 text-sm rounded-full shadow-sm cursor-pointer border-none outline-none font-medium ${getStatusColor(item.status)}`}
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                  </select>
+                )}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
-}
-
-// Date format
-function formatDate(date) {
-  const d = new Date(date);
-  return d.toLocaleDateString('en-IN', {
-    day: '2-digit',
-    month: 'short',
-  });
 }

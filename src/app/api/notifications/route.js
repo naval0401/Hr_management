@@ -4,7 +4,7 @@ import { verifyUser } from "@/lib/auth";
 
 export async function GET(request) {
   try {
-    const { role, keycloak_id } = await verifyUser(request);
+    const { role, keycloak_id, employee_id } = await verifyUser(request);
 
     let query = supabase
       .from("notifications")
@@ -14,8 +14,8 @@ export async function GET(request) {
     if (role === "admin" || role === "hr") {
       query = query.or(`role.eq.hr,role.eq.admin,role.eq.all`);
     } else if (role === "manager") {
-      query = query.or(`role.eq.manager,role.eq.all,employee_id.eq.${keycloak_id}`);
-    } else {
+  query = query.or(`role.eq.manager,role.eq.all,employee_id.eq.${employee_id}`);
+} else {
       query = query.or(`role.eq.user,role.eq.all,employee_id.eq.${keycloak_id}`);
     }
 

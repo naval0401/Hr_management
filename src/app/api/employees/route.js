@@ -7,7 +7,7 @@ export async function GET(request) {
   try {
     const { role } = await verifyUser(request);
 
-if (!(role === "hr" || role === "admin")) {
+if (!(role === "hr" || role === "admin" || role === "manager")) {
   return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 }
 

@@ -49,10 +49,10 @@ export async function POST(request) {
       console.log("DEBUG: Found reporting_manager =", employeeRow.reporting_manager);
 
       const { data: managerRow, error: managerError } = await supabase
-        .from("employees")
-        .select("keycloak_id")
-        .eq("id", employeeRow.reporting_manager)
-        .single();
+  .from("employees")
+  .select("keycloak_id, id")
+  .eq("id", employeeRow.reporting_manager)
+  .single();
 
       console.log("DEBUG: managerRow =", managerRow, "managerError =", managerError);
 
@@ -63,7 +63,7 @@ export async function POST(request) {
           .from("notifications")
           .insert([
             {
-              employee_id: managerRow.keycloak_id,
+              employee_id: managerRow.id,
               role: "manager",
               type: "leave",
               title: "New Leave Request — Awaiting Your Approval",
