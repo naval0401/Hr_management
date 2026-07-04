@@ -50,7 +50,7 @@ export async function POST(request) {
 
       const { data: managerRow, error: managerError } = await supabase
   .from("employees")
-  .select("keycloak_id, id")
+  .select("keycloak_id, id, employee_id")
   .eq("id", employeeRow.reporting_manager)
   .single();
 
@@ -63,7 +63,7 @@ export async function POST(request) {
           .from("notifications")
           .insert([
             {
-              employee_id: managerRow.id,
+              employee_id: managerRow.employee_id,
               role: "manager",
               type: "leave",
               title: "New Leave Request — Awaiting Your Approval",

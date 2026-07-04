@@ -157,12 +157,17 @@ if (role === "manager" && status === "Approved" && data?.[0]) {
       (role === "hr" && (status === "Approved" || status === "Rejected"))
     ) {
       const leave = data?.[0];
-      if (leave?.user_id) {
-        const { error: empNotifyError } = await supabase
-          .from("notifications")
-          .insert([
-            {
-              employee_id: leave.user_id,
+if (leave?.user_id) {
+  const { data: empRow } = await supabase
+    .from("employees")
+    .select("employee_id")
+    .eq("keycloak_id", leave.user_id)
+    .single();
+
+  const { error: empNotifyError } = await supabase
+    .from("notifications")
+    .insert([{
+      employee_id: empRow?.employee_id || null,
               role: "user",
               type: "leave",
               title: `Leave Request ${status}`,
