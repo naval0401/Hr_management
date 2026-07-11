@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import keycloak from "@/lib/keycloak";
-import { Calendar, CalendarCheck, Clock3, Megaphone, ArrowRight } from "lucide-react";
+import { Calendar, CalendarCheck, Clock3, Megaphone, ArrowRight, UserCircle, FileText, Wallet } from "lucide-react";
 
 export default function DashboardPage() {
   const [announcements, setAnnouncements] = useState([]);
@@ -61,6 +61,36 @@ export default function DashboardPage() {
       iconBg: "bg-cyan-100 dark:bg-cyan-950",
       iconColor: "text-cyan-700 dark:text-cyan-300",
       accent: "border-l-cyan-600",
+    },
+     {
+      title: "My Profile",
+      desc: "View and update your personal info",
+      button: "View Profile",
+      link: "/profile",
+      icon: UserCircle,
+      iconBg: "bg-violet-100 dark:bg-violet-950",
+      iconColor: "text-violet-700 dark:text-violet-300",
+      accent: "border-l-violet-600",
+    },
+    {
+      title: "My Documents",
+      desc: "View and request your documents",
+      button: "View Documents",
+      link: "/document-request",
+      icon: FileText,
+      iconBg: "bg-green-100 dark:bg-green-950",
+      iconColor: "text-green-700 dark:text-green-300",
+      accent: "border-l-green-600",
+    },
+    {
+      title: "My Payslips",
+      desc: "View your salary slips",
+      button: "View Payslips",
+      link: "/my-payslips",
+      icon: Wallet,
+      iconBg: "bg-amber-100 dark:bg-amber-950",
+      iconColor: "text-amber-700 dark:text-amber-300",
+      accent: "border-l-amber-600",
     },
   ];
 

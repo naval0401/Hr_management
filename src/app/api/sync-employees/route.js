@@ -14,65 +14,33 @@ export async function POST(request) {
       algorithms: ["RS256"],
     });
 
-    const employee_id = decoded.sub;
+    const keycloak_id = decoded.sub;
+    const email = decoded.email || "";
 
-    const newData = {
-      employee_id,
-      employee_name:
-        decoded.name || decoded.preferred_username || "User",
-      email: decoded.email || "",
-      phone: decoded.phone || "",
-      department: decoded.department || "general",
-      role: decoded.realm_access?.roles || [],
-    };
-
-    // 1. check existing user
-    const { data: existing, error: fetchError } = await supabase
-      .from("employees")
-      .select("*")
-      .eq("employee_id", employee_id)
-      .single();
-
-    if (fetchError && fetchError.code !== "PGRST116") {
-      throw fetchError;
+    if (!email) {
+      return NextResponse.json({ error: "No email in token" }, { status: 400 });
     }
 
-    let finalData = newData;
+    // find Existing Employee with Email
+    const { data: existing } = await supabase
+      .from("employees")
+      .select("id, keycloak_id")
+      .eq("email", email)
+      .maybeSingle();
 
-    // 2. merge logic (only fill empty fields)
+    // if employee find update only keycloak_id
     if (existing) {
-      finalData = {
-        employee_id,
+      await supabase
+        .from("employees")
+        .update({ keycloak_id })
+        .eq("email", email);
 
-        employee_name:
-          existing.employee_name || newData.employee_name,
-
-        email: existing.email || newData.email,
-
-        phone: existing.phone || newData.phone,
-
-        department: existing.department || newData.department,
-
-        role:
-          existing.role && existing.role.length > 0
-            ? existing.role
-            : newData.role,
-      };
+      return NextResponse.json({ success: true });
     }
 
-    // 3. update only (no overwrite issue)
-    const { error } = await supabase
-      .from("employees")
-      .upsert(finalData, {
-        onConflict: "employee_id",
-      });
-
-    if (error) {
-      console.log("SUPABASE ERROR:", error);
-      throw error;
-    }
-
+    // id employee does not find do nothing
     return NextResponse.json({ success: true });
+
   } catch (err) {
     console.log("SYNC ERROR:", err);
     return NextResponse.json({ error: "Sync failed" }, { status: 500 });

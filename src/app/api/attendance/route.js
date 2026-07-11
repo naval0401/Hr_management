@@ -80,16 +80,14 @@ export async function POST(request) {
         status = "Late";
       }
 
-      const { data: employee, error: empError } = await supabase
-        .from("employees")
-        .select("employee_name")
-        .eq("employee_id", userId)
-        .single();
+      const { data: employee } = await supabase
+  .from("employees")
+  .select("employee_name, employee_id")
+  .eq("keycloak_id", userId)
+  .single();
 
-      if (empError) throw empError;
-
-      const { error } = await supabase.from("attendance").insert({
-        employee_id: userId,
+const { error } = await supabase.from("attendance").insert({
+  employee_id: employee?.employee_id,
         employee_name: employee?.employee_name,
         date: today,
         check_in: now,

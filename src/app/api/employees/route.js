@@ -5,7 +5,17 @@ import { verifyUser } from "@/lib/auth";
 // GET — list employees, with optional ?department= and ?status= filters
 export async function GET(request) {
   try {
-    const { role } = await verifyUser(request);
+    const { role, keycloak_id } = await verifyUser(request);
+
+if (role === "user") {
+  const { data, error } = await supabase
+    .from("employees")
+    .select("*")
+    .eq("keycloak_id", keycloak_id)
+    .single();
+  if (error) throw error;
+  return NextResponse.json(data ? [data] : []);
+}
 
 if (!(role === "hr" || role === "admin" || role === "manager")) {
   return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -47,7 +57,17 @@ export async function POST(request) {
   try {
     const { role } = await verifyUser(request);
 
-if (!(role === "hr" || role === "admin")) {
+if (role === "user") {
+  const { data, error } = await supabase
+    .from("employees")
+    .select("*")
+    .eq("keycloak_id", keycloak_id)
+    .single();
+  if (error) throw error;
+  return NextResponse.json(data ? [data] : []);
+}
+
+if (!(role === "hr" || role === "admin" || role === "manager")) {
   return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 }
 
