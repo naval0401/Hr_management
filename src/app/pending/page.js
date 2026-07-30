@@ -170,11 +170,10 @@ export default function PendingPage() {
             >
               {/* Left — Icon + Info */}
               <div className="flex items-center gap-4">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                  item._type === "leave"
-                    ? "bg-indigo-100 dark:bg-indigo-900/30"
-                    : "bg-green-100 dark:bg-green-900/30"
-                }`}>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${item._type === "leave"
+                  ? "bg-indigo-100 dark:bg-indigo-900/30"
+                  : "bg-green-100 dark:bg-green-900/30"
+                  }`}>
                   {item._type === "leave"
                     ? <Calendar size={18} className="text-indigo-700 dark:text-indigo-400" />
                     : <FileText size={18} className="text-green-700 dark:text-green-400" />
@@ -209,28 +208,52 @@ export default function PendingPage() {
 
               {/* Right — Status Select */}
               <div className="shrink-0">
-                {item._type === "leave" ? (
-                  <select
-                    value={item.status}
-                    onChange={(e) => handleLeaveStatus(item.id, e.target.value)}
-                    className={`px-3 py-1.5 text-sm rounded-full shadow-sm cursor-pointer border-none outline-none font-medium ${getStatusColor(item.status)}`}
-                  >
-                    <option value="pending">Pending</option>
-                    <option value="Approved">Approved</option>
-                    <option value="Rejected">Rejected</option>
-                  </select>
-                ) : (
-                  <select
-                    value={item.status}
-                    onChange={(e) => handleDocStatus(item.id, e.target.value)}
-                    className={`px-3 py-1.5 text-sm rounded-full shadow-sm cursor-pointer border-none outline-none font-medium ${getStatusColor(item.status)}`}
-                  >
-                    <option value="pending">Pending</option>
-                    <option value="approved">Approved</option>
-                    <option value="rejected">Rejected</option>
-                  </select>
-                )}
-              </div>
+  {item._type === "leave" ? (
+    userRole === "manager" || userRole === "hr" || userRole === "admin" ? (
+      item.status?.toLowerCase() === "pending" ? (
+        <select
+          value={item.status}
+          onChange={(e) => handleLeaveStatus(item.id, e.target.value)}
+          className={`px-3 py-1.5 text-sm rounded-full shadow-sm cursor-pointer border-none outline-none font-medium ${getStatusColor(item.status)}`}
+        >
+          <option value="pending">Pending</option>
+          <option value="Approved">Approved</option>
+          <option value="Rejected">Rejected</option>
+        </select>
+      ) : (
+        <span
+          className={`px-4 py-2 rounded-full text-sm font-medium ${getStatusColor(item.status)}`}
+        >
+          {item.status}
+        </span>
+      )
+    ) : (
+      <span
+        className={`px-4 py-2 rounded-full text-sm font-medium ${getStatusColor(item.status)}`}
+      >
+        {item.status}
+      </span>
+    )
+  ) : (
+    item.status?.toLowerCase() === "pending" ? (
+      <select
+        value={item.status}
+        onChange={(e) => handleDocStatus(item.id, e.target.value)}
+        className={`px-3 py-1.5 text-sm rounded-full shadow-sm cursor-pointer border-none outline-none font-medium ${getStatusColor(item.status)}`}
+      >
+        <option value="pending">Pending</option>
+        <option value="approved">Approved</option>
+        <option value="rejected">Rejected</option>
+      </select>
+    ) : (
+      <span
+        className={`px-4 py-2 rounded-full text-sm font-medium ${getStatusColor(item.status)}`}
+      >
+        {item.status}
+      </span>
+    )
+  )}
+</div>
             </div>
           ))
         )}

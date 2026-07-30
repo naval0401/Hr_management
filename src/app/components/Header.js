@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { PanelLeftCloseIcon, Moon, Sun, Bell } from "lucide-react";
+import { PanelLeftCloseIcon, Menu, Moon, Sun, Bell } from "lucide-react";
 import keycloak from "@/lib/keycloak";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-export default function Header({ collapsed, setCollapsed }) {
+export default function Header({ collapsed, setCollapsed, mobileOpen,
+  setMobileOpen,}) {
   const [open, setOpen] = useState(false);
   const [dark, setDark] = useState(false);
   const [user, setUser] = useState({
@@ -105,27 +106,39 @@ export default function Header({ collapsed, setCollapsed }) {
       {/* LEFT */}
       <div className="flex items-center gap-3">
 
-        <div className="w-7 h-7 bg-[var(--shell-icon-bg)] rounded-full flex items-center justify-center text-[var(--shell-text)] hover:bg-[var(--shell-hover)] transition">
-          <PanelLeftCloseIcon
-            size={16}
-            onClick={() => setCollapsed(!collapsed)}
-            className="cursor-pointer"
-          />
-        </div>
+        <>
+  {/* Mobile Menu */}
+  <div className="max-[620px]:flex hidden w-8 h-8 items-center justify-center rounded-md bg-[var(--shell-icon-bg)]">
+    <Menu
+      size={18}
+      className="cursor-pointer"
+      onClick={() => setMobileOpen(true)}
+    />
+  </div>
 
-        <div>
-          <h2 className="text-lg font-semibold text-[var(--shell-text)]">
-            VHC (HR)
-          </h2>
+  {/* Desktop Collapse */}
+  <div className="max-[620px]:hidden w-7 h-7 bg-[var(--shell-icon-bg)] rounded-full flex items-center justify-center text-[var(--shell-text)] hover:bg-[var(--shell-hover)] transition">
+    <PanelLeftCloseIcon
+      size={16}
+      onClick={() => setCollapsed(!collapsed)}
+      className="cursor-pointer"
+    />
+  </div>
+</>
 
-          <p className="text-xs text-[var(--shell-text-muted)]">
-            Dashboard
-          </p>
-        </div>
+        <div className="hidden min-[621px]:block">
+  <h2 className="text-lg font-semibold text-[var(--shell-text)]">
+    VHC (HR)
+  </h2>
+
+  <p className="text-xs text-[var(--shell-text-muted)]">
+    Dashboard
+  </p>
+</div>
       </div>
 
       {/* RIGHT */}
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-3 min-[621px]:gap-6">
 
         {/* DARK MODE */}
         <div className="w-7 h-7 bg-[var(--shell-icon-bg)] rounded-full flex items-center justify-center hover:bg-[var(--shell-hover)] transition">

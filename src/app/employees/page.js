@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Eye, Pencil, Trash2, X, Users, UserCheck, UserX } from "lucide-react";
+import Link from "next/link";
+import { Eye, Pencil, Trash2, X, Users, UserCheck, UserX, Building2 } from "lucide-react";
 import keycloak from "@/lib/keycloak";
 import EmployeeDocuments from "../components/EmployeeDocuments";
 
@@ -9,6 +10,9 @@ export default function EmployeesPage() {
   const [employees, setEmployees] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [teamCount, setTeamCount] = useState(0);
+  const [departmentCount, setDepartmentCount] = useState(0);
+
 
   // filters
   const [search, setSearch] = useState("");
@@ -24,6 +28,7 @@ export default function EmployeesPage() {
     employee_id: "",
     department: "",
     designation: "",
+    reports_to: "",
     date_of_joining: "",
     status: true,
   });
@@ -180,27 +185,28 @@ export default function EmployeesPage() {
   };
 
   const startEditInModal = (emp) => {
-  const source = emp || viewEmployee; // modal ke andar se bhi kaam kare
-  setEditData({
-    employee_name: source.employee_name || "",
-    email: source.email || "",
-    phone: source.phone || "",
-    employee_id: source.employee_id || "",
-    department: source.department || "",
-    designation: source.designation || "",
-    date_of_joining: source.date_of_joining || "",
-    status: source.status,
-    date_of_birth: source.date_of_birth || "",
-    address: source.address || "",
-    emergency_contact_name: source.emergency_contact_name || "",
-    emergency_contact_phone: source.emergency_contact_phone || "",
-    blood_group: source.blood_group || "",
-    employment_type: source.employment_type || "",
-    skills: source.skills || "",
-    documents_notes: source.documents_notes || "",
-  });
-  setIsEditing(true);
-};
+    const source = emp || viewEmployee; // modal ke andar se bhi kaam kare
+    setEditData({
+      employee_name: source.employee_name || "",
+      email: source.email || "",
+      phone: source.phone || "",
+      employee_id: source.employee_id || "",
+      department: source.department || "",
+      designation: source.designation || "",
+      reports_to: source.reports_to || "",
+      date_of_joining: source.date_of_joining || "",
+      status: source.status,
+      date_of_birth: source.date_of_birth || "",
+      address: source.address || "",
+      emergency_contact_name: source.emergency_contact_name || "",
+      emergency_contact_phone: source.emergency_contact_phone || "",
+      blood_group: source.blood_group || "",
+      employment_type: source.employment_type || "",
+      skills: source.skills || "",
+      documents_notes: source.documents_notes || "",
+    });
+    setIsEditing(true);
+  };
 
   const cancelEditInModal = () => {
     setIsEditing(false);
@@ -248,6 +254,46 @@ export default function EmployeesPage() {
     emp.employee_id?.toLowerCase().includes(search.toLowerCase())
   );
 
+  const fetchCounts = async () => {
+    try {
+      const [teamsRes, deptRes] = await Promise.all([
+        fetch("/api/teams", {
+          headers: { Authorization: `Bearer ${keycloak.token}` },
+        }),
+        fetch("/api/departments", {
+          headers: { Authorization: `Bearer ${keycloak.token}` },
+        }),
+      ]);
+
+      const teams = await teamsRes.json();
+      const departments = await deptRes.json();
+
+      setTeamCount(Array.isArray(teams) ? teams.length : 0);
+      setDepartmentCount(Array.isArray(departments) ? departments.length : 0);
+
+    } catch (err) {
+      console.log("COUNT FETCH ERROR:", err);
+    }
+  };
+
+  useEffect(() => {
+    const init = async () => {
+      if (!keycloak?.authenticated) return;
+
+      try {
+        await keycloak.updateToken(30);
+
+        fetchDepartments();
+        fetchCounts();   // <-- add this
+
+      } catch (err) {
+        console.log("KEYCLOAK ERROR:", err);
+      }
+    };
+
+    init();
+  }, []);
+
   return (
     <div className="pt-16 p-6 min-h-screen bg-[var(--background)] text-[var(--text)]">
 
@@ -293,6 +339,24 @@ export default function EmployeesPage() {
             <p className="text-3xl font-bold mt-1 text-[var(--text)]">{stats.inactive}</p>
           </div>
         </div>
+        <Link href="/teams"><div className="bg-[var(--card)] border border-[var(--border)] border-l-4 border-l-red-600 rounded-xl shadow-sm p-6 flex items-start gap-4 hover:shadow-md transition-all duration-200">
+          <div className="w-11 h-11 rounded-xl  bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center shrink-0">
+            <Users size={20} className="text-emerald-700 dark:text-emerald-300" />
+          </div>
+          <div>
+            <p className="text-sm text-[var(--text-muted)]">Teams</p>
+            <p className="text-3xl font-bold mt-1 text-[var(--text)]">{teamCount || 'n/a'}</p>
+          </div>
+        </div></Link>
+        <Link href="/departments"><div className="bg-[var(--card)] border border-[var(--border)] border-l-4 border-l-red-600 rounded-xl shadow-sm p-6 flex items-start gap-4 hover:shadow-md transition-all duration-200">
+          <div className="w-11 h-11 rounded-xl bg-red-100 dark:bg-red-950 flex items-center justify-center shrink-0">
+            <Building2 size={20} className="text-red-700 dark:text-red-300" />
+          </div>
+          <div>
+            <p className="text-sm text-[var(--text-muted)]">Department</p>
+            <p className="text-3xl font-bold mt-1 text-[var(--text)]">{departmentCount || 'N/A'}</p>
+          </div>
+        </div></Link>
       </div>
 
       {/* TOOLBAR */}
@@ -404,6 +468,25 @@ export default function EmployeesPage() {
               <option value="false">Inactive</option>
             </select>
 
+            <select
+              value={formData.reports_to}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  reports_to: e.target.value || null,
+                })
+              }
+              className="bg-[var(--background)] border border-[var(--border)] rounded-lg p-2"
+            >
+              <option value="">Select Reporting Manager</option>
+
+              {employees.map((emp) => (
+                <option key={emp.id} value={emp.id}>
+                  {emp.employee_name}
+                </option>
+              ))}
+            </select>
+
             <div className="flex gap-3 md:col-span-2">
               <button
                 type="submit"
@@ -461,11 +544,10 @@ export default function EmployeesPage() {
             <div className="text-[var(--text-muted)]">{emp.designation || "-"}</div>
             <div>
               <span
-                className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  emp.status
-                    ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300"
-                    : "bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300"
-                }`}
+                className={`px-2 py-1 rounded-full text-xs font-medium ${emp.status
+                  ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300"
+                  : "bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300"
+                  }`}
               >
                 {emp.status ? "Active" : "Inactive"}
               </span>
@@ -479,15 +561,15 @@ export default function EmployeesPage() {
                 <Eye size={16} />
               </button>
               <button
-  onClick={() => {
-    openView(emp);
-    startEditInModal(emp); // ✅ direct emp pass karo, setTimeout hatao
-  }}
-  className="bg-indigo-900 hover:bg-indigo-800 text-white p-1.5 rounded-lg transition"
-  title="Edit"
->
-  <Pencil size={16} />
-</button>
+                onClick={() => {
+                  openView(emp);
+                  startEditInModal(emp); // ✅ direct emp pass karo, setTimeout hatao
+                }}
+                className="bg-indigo-900 hover:bg-indigo-800 text-white p-1.5 rounded-lg transition"
+                title="Edit"
+              >
+                <Pencil size={16} />
+              </button>
               <button
                 onClick={() => handleDelete(emp.id)}
                 className="bg-red-500 hover:bg-red-600 text-white p-1.5 rounded-lg transition"
@@ -543,11 +625,10 @@ export default function EmployeesPage() {
                         </span>
                       )}
                       <span
-                        className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                          viewEmployee.status
-                            ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300"
-                            : "bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300"
-                        }`}
+                        className={`px-2 py-0.5 rounded-full text-xs font-medium ${viewEmployee.status
+                          ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300"
+                          : "bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300"
+                          }`}
                       >
                         {viewEmployee.status ? "Active" : "Inactive"}
                       </span>
@@ -568,11 +649,10 @@ export default function EmployeesPage() {
                     <button
                       key={tab}
                       onClick={() => setActiveTab(tab)}
-                      className={`px-4 py-2 text-sm font-medium capitalize ${
-                        activeTab === tab
-                          ? "border-b-2 border-indigo-600 text-indigo-600"
-                          : "text-[var(--text-muted)]"
-                      }`}
+                      className={`px-4 py-2 text-sm font-medium capitalize ${activeTab === tab
+                        ? "border-b-2 border-indigo-600 text-indigo-600"
+                        : "text-[var(--text-muted)]"
+                        }`}
                     >
                       {tab === "personal" ? "Personal Info" : tab === "employment" ? "Employment" : "Documents & Skills"}
                     </button>
@@ -630,8 +710,8 @@ export default function EmployeesPage() {
                 )}
 
                 {activeTab === "documents" && (
-  <EmployeeDocuments employeeId={viewEmployee.id} token={keycloak.token} />
-)}
+                  <EmployeeDocuments employeeId={viewEmployee.id} token={keycloak.token} />
+                )}
               </>
             ) : (
               <>
@@ -641,11 +721,10 @@ export default function EmployeesPage() {
                     <button
                       key={tab}
                       onClick={() => setActiveTab(tab)}
-                      className={`px-4 py-2 text-sm font-medium capitalize ${
-                        activeTab === tab
-                          ? "border-b-2 border-indigo-600 text-indigo-600"
-                          : "text-[var(--text-muted)]"
-                      }`}
+                      className={`px-4 py-2 text-sm font-medium capitalize ${activeTab === tab
+                        ? "border-b-2 border-indigo-600 text-indigo-600"
+                        : "text-[var(--text-muted)]"
+                        }`}
                     >
                       {tab === "personal" ? "Personal Info" : tab === "employment" ? "Employment" : "Documents & Skills"}
                     </button>
@@ -770,6 +849,36 @@ export default function EmployeesPage() {
                         onChange={(e) => setEditData({ ...editData, employment_type: e.target.value })}
                         className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 text-sm outline-none text-[var(--text)]"
                       />
+                    </div>
+                    <div>
+                      <label className="text-xs text-[var(--text-muted)]">
+                        Reporting Manager
+                      </label>
+
+                      <select
+                        value={editData.reports_to || ""}
+                        onChange={(e) =>
+                          setEditData({
+                            ...editData,
+                            reports_to: e.target.value || null,
+                          })
+                        }
+                        className="w-full bg-[var(--background)] border border-[var(--border)] rounded-lg p-2 text-sm outline-none text-[var(--text)]"
+                      >
+                        <option value="">
+                          Select Reporting Manager
+                        </option>
+
+                        {employees
+                          .filter((emp) => emp.id !== viewEmployee.id)
+                          .map((emp) => (
+                            <option key={emp.id} value={emp.id}>
+                              {emp.employee_name}
+                              {emp.designation ? ` (${emp.designation})` : ""}
+                            </option>
+                          ))}
+
+                      </select>
                     </div>
                     <div>
                       <label className="text-xs text-[var(--text-muted)]">Status</label>

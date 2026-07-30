@@ -23,8 +23,8 @@ export default function LeaveForm() {
     e.preventDefault();
 
     // ✅ name remove from validation
-    if (!formData.fromDate || !formData.toDate || !formData.reason) {
-      alert("Please fill all fields");
+    if (new Date(formData.fromDate) > new Date(formData.toDate)) {
+      alert("From date cannot be after To date");
       return;
     }
 
@@ -99,6 +99,7 @@ export default function LeaveForm() {
                   type="date"
                   name="toDate"
                   value={formData.toDate}
+                  min={formData.fromDate}
                   onChange={handleChange}
                   className="w-full bg-[var(--card)] border border-[var(--border)] text-[var(--text)] rounded-lg px-4 py-3 outline-none dark:text-white dark:bg-gray-500"
                   style={{ colorScheme: "dark" }}

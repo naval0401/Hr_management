@@ -5,21 +5,7 @@ import { verifyUser } from "@/lib/auth";
 // GET — list employees, with optional ?department= and ?status= filters
 export async function GET(request) {
   try {
-    const { role, keycloak_id } = await verifyUser(request);
-
-if (role === "user") {
-  const { data, error } = await supabase
-    .from("employees")
-    .select("*")
-    .eq("keycloak_id", keycloak_id)
-    .single();
-  if (error) throw error;
-  return NextResponse.json(data ? [data] : []);
-}
-
-if (!(role === "hr" || role === "admin" || role === "manager")) {
-  return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-}
+    const { role } = await verifyUser(request);
 
     const { searchParams } = new URL(request.url);
     const department = searchParams.get("department");
@@ -27,8 +13,16 @@ if (!(role === "hr" || role === "admin" || role === "manager")) {
 
     let query = supabase
       .from("employees")
-      .select("*")
+      .select(`
+        *,
+        reporting_manager:reports_to (
+          id,
+          employee_name,
+          designation
+        )
+      `)
       .order("created_at", { ascending: false });
+
 
     if (department && department !== "all") {
       query = query.eq("department", department);
@@ -38,13 +32,16 @@ if (!(role === "hr" || role === "admin" || role === "manager")) {
       query = query.eq("status", status === "active");
     }
 
+
     const { data, error } = await query;
 
     if (error) throw error;
 
     return NextResponse.json(data || []);
+
   } catch (err) {
     console.log("EMPLOYEES API ERROR:", err);
+
     return NextResponse.json(
       { error: err.message || "Unauthorized" },
       { status: 401 }
@@ -79,6 +76,7 @@ if (!(role === "hr" || role === "admin" || role === "manager")) {
       employee_id,
       designation,
       department,
+      reports_to,
       date_of_joining,
       status,
     } = body;
@@ -100,6 +98,7 @@ if (!(role === "hr" || role === "admin" || role === "manager")) {
           employee_id,
           designation,
           department,
+          reports_to,
           date_of_joining,
           status: status ?? true,
         },

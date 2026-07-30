@@ -20,6 +20,11 @@ export default function HRDashboard() {
 
   const [pendingCount, setPendingCount] = useState(0);
   const [announcements, setAnnouncements] = useState([]);
+  const [employeeStats, setEmployeeStats] = useState({
+  total: 0,
+  active: 0,
+  inactive: 0,
+});
 
   useEffect(() => {
     const fetchPendingCount = async () => {
@@ -63,10 +68,39 @@ export default function HRDashboard() {
     }
   }, []);
 
+  useEffect(() => {
+  const fetchEmployeeStats = async () => {
+    try {
+      if (!keycloak?.authenticated) return;
+
+      const res = await fetch("/api/employees", {
+        headers: {
+          Authorization: `Bearer ${keycloak.token}`,
+        },
+      });
+
+      const data = await res.json();
+
+      if (!Array.isArray(data)) return;
+
+      setEmployeeStats({
+        total: data.length,
+        active: data.filter(emp => emp.status === true).length,
+        inactive: data.filter(emp => emp.status === false).length,
+      });
+
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  fetchEmployeeStats();
+}, []);
+
   const cards = [
     {
       title: "Employees",
-      value: "120 Active Employees",
+      value: `${employeeStats.active} Active / ${employeeStats.total} Total`,
       button: "View Employees",
       link: "/employees",
       icon: Users,

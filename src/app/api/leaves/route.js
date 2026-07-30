@@ -39,19 +39,19 @@ export async function POST(request) {
 
     const { data: employeeRow, error: empError } = await supabase
       .from("employees")
-      .select("reporting_manager")
+      .select("reports_to")
       .eq("keycloak_id", userId)
       .single();
 
     console.log("DEBUG: employeeRow =", employeeRow, "empError =", empError);
 
-    if (!empError && employeeRow?.reporting_manager) {
+    if (!empError && employeeRow?.reports_to) {
       console.log("DEBUG: Found reporting_manager =", employeeRow.reporting_manager);
 
       const { data: managerRow, error: managerError } = await supabase
   .from("employees")
   .select("keycloak_id, id, employee_id")
-  .eq("id", employeeRow.reporting_manager)
+  .eq("id", employeeRow.reports_to)
   .single();
 
       console.log("DEBUG: managerRow =", managerRow, "managerError =", managerError);

@@ -15,51 +15,43 @@ export async function GET(request) {
       query = query.eq("user_id", keycloak_id);
 
     } else if (role === "manager") {
-      // Find this manager's employees.id
-      const { data: myRow } = await supabase
-        .from("employees")
-        .select("id")
-        .eq("keycloak_id", keycloak_id)
-        .single();
 
-      // Find which department(s) this person manages
-      const { data: managedDepts, error: deptError } = await supabase
-        .from("departments")
-        .select("name")
-        .eq("manager_id", myRow?.id);
+  // Manager ki employee row nikalo
+  const { data: myRow, error: myError } = await supabase
+    .from("employees")
+    .select("id")
+    .eq("keycloak_id", keycloak_id)
+    .single();
 
-      if (deptError) {
-        return NextResponse.json({ error: deptError.message }, { status: 500 });
-      }
+  if (myError || !myRow) {
+    return NextResponse.json([], { status: 200 });
+  }
 
-      const deptNames = (managedDepts || []).map((d) => d.name);
+  // Is manager ko report karne wale employees nikalo
+  const { data: teamEmployees, error: teamError } = await supabase
+    .from("employees")
+    .select("keycloak_id")
+    .eq("reports_to", myRow.id);
 
-      if (deptNames.length === 0) {
-        return NextResponse.json([], { status: 200 });
-      }
+  if (teamError) {
+    return NextResponse.json(
+      { error: teamError.message },
+      { status: 500 }
+    );
+  }
 
-      // Find all employees in those departments
-      const { data: teamEmployees, error: teamError } = await supabase
-        .from("employees")
-        .select("keycloak_id")
-        .in("department", deptNames);
+  const teamKeycloakIds = (teamEmployees || [])
+    .map(emp => emp.keycloak_id)
+    .filter(Boolean);
 
-      if (teamError) {
-        return NextResponse.json({ error: teamError.message }, { status: 500 });
-      }
+  if (teamKeycloakIds.length === 0) {
+    return NextResponse.json([], { status: 200 });
+  }
 
-      const teamKeycloakIds = (teamEmployees || [])
-        .map((e) => e.keycloak_id)
-        .filter(Boolean);
-
-      if (teamKeycloakIds.length === 0) {
-        return NextResponse.json([], { status: 200 });
-      }
-
-      query = query
-        .in("user_id", teamKeycloakIds)
-        .eq("manager_status", "pending");
-
+  query = query
+    .in("user_id", teamKeycloakIds)
+    .eq("manager_status", "pending");
+    
     } else if (role === "hr" || role === "admin") {
   query = query
     .eq("manager_status", "Approved");
@@ -101,18 +93,27 @@ export async function PUT(request) {
     let updateFields = {};
 
     if (role === "manager") {
-      updateFields = { manager_status: status };
-    } else if (role === "hr" || role === "admin") {
-      updateFields = { hr_status: status };
-    } else {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+  updateFields = {
+    manager_status: status,
+  };
 
-    if (status === "Rejected") {
-      updateFields.status = "Rejected";
-    } else if (role === "hr" && status === "Approved") {
-      updateFields.status = "Approved";
-    }
+  if (status === "Rejected") {
+    updateFields.status = "Rejected";
+  }
+
+} else if (role === "hr" || role === "admin") {
+  updateFields = {
+    hr_status: status,
+  };
+
+  if (status === "Approved") {
+    updateFields.status = "Approved";
+  }
+
+  if (status === "Rejected") {
+    updateFields.status = "Rejected";
+  }
+}
 
     const { data, error } = await supabase
       .from("leaves")

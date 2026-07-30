@@ -11,6 +11,7 @@ export default function Layout({ children }) {
   const isLoginPage = pathname === "/login"; 
 
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
 useEffect(() => {
   if (typeof window !== "undefined") {
@@ -25,19 +26,32 @@ useEffect(() => {
   }
 }, [collapsed]);
 
+useEffect(() => {
+  setMobileOpen(false);
+}, [pathname]);
+
   return (
     <div className="flex">
 
-      {!isLoginPage && <Sidebar collapsed={collapsed} />}
+      {!isLoginPage && <Sidebar collapsed={collapsed} mobileOpen={mobileOpen}
+  setMobileOpen={setMobileOpen} />}
 
       <div
-        className={`flex-1 transition-all duration-300
-        ${!isLoginPage && (collapsed ? "ml-[80px]" : "ml-[250px]")}`}
-      >
+  className={`flex-1 transition-all duration-300
+  ${
+    !isLoginPage
+      ? collapsed
+        ? "ml-0 min-[621px]:ml-[80px]"
+        : "ml-0 min-[621px]:ml-[250px]"
+      : ""
+  }`}
+>
         {!isLoginPage && (
           <Header
             collapsed={collapsed}
             setCollapsed={setCollapsed}
+            mobileOpen={mobileOpen}
+  setMobileOpen={setMobileOpen}
           />
         )}
 

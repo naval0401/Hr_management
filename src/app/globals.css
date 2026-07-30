@@ -60,3 +60,6 @@ body {
 }
 
 
+@theme {
+  --breakpoint-mobile: 620px;
+}
